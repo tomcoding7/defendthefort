@@ -15,13 +15,14 @@ class Monster {
         this.armorLevel = 0;
         this.abilities = cardData.abilities || [];
         this.temporaryAttackBoost = 0;
+        this.permanentAttackBoost = 0; // Permanent attack boost from spells
         this.owner = null; // Will be set when placed on field
         this.hasAttackedThisTurn = false;
         this.attackCountThisTurn = 0;
     }
 
     get attack() {
-        return this.baseAttack + (this.weaponLevel * 2) + this.temporaryAttackBoost;
+        return this.baseAttack + (this.weaponLevel * 2) + this.temporaryAttackBoost + this.permanentAttackBoost;
     }
 
     get defense() {
@@ -156,6 +157,22 @@ class Monster {
             card.style.opacity = '0.6';
         }
         
+        // Add monster image if available
+        const imagePath = `assets/images/cards/monsters/${this.id}.png`;
+        const monsterImage = document.createElement('img');
+        monsterImage.src = imagePath;
+        monsterImage.className = 'monster-image';
+        monsterImage.alt = this.name;
+        monsterImage.onerror = function() {
+            // Hide image if not found (fallback to text-only)
+            this.style.display = 'none';
+        };
+        monsterImage.style.width = '100%';
+        monsterImage.style.height = '120px';
+        monsterImage.style.objectFit = 'cover';
+        monsterImage.style.borderRadius = '8px';
+        monsterImage.style.marginBottom = '8px';
+        
         const level = document.createElement('div');
         level.className = 'monster-level';
         level.textContent = `Lv.${this.level}`;
@@ -163,6 +180,8 @@ class Monster {
         const name = document.createElement('div');
         name.className = 'monster-name';
         name.textContent = this.name;
+        
+        card.appendChild(monsterImage);
         
         const stats = document.createElement('div');
         stats.className = 'monster-stats';
@@ -194,6 +213,7 @@ class Monster {
         exp.style.fontSize = '0.7em';
         exp.style.marginTop = '3px';
         
+        card.appendChild(monsterImage);
         card.appendChild(level);
         card.appendChild(name);
         card.appendChild(stats);

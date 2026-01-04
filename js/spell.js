@@ -95,10 +95,50 @@ class Spell {
                     
                     if (!target.isAlive()) {
                         game.log(`${target.name} is defeated!`);
+                        const opponent = game.getOpponent(player);
+                        const targetSlot = opponent.monsterField.indexOf(target);
+                        if (targetSlot !== -1) {
+                            opponent.graveyard.push(target);
+                            opponent.monsterField[targetSlot] = null;
+                            if (window.animateMonsterDestroy) {
+                                window.animateMonsterDestroy(opponent.id, targetSlot);
+                            }
+                        }
                     }
                     return { success: true, message: 'Monster damaged', needsTarget: false };
                 }
                 return { success: false, message: 'Select a target monster', needsTarget: true };
+                
+            case 'permanent_attack_boost':
+                // Rally Cry - permanent +1 attack to all monsters
+                let boostedCount = 0;
+                player.monsterField.forEach(monster => {
+                    if (monster && monster.isAlive()) {
+                        monster.permanentAttackBoost += 1;
+                        boostedCount++;
+                    }
+                });
+                game.log(`${player.name}'s ${this.name} permanently increases all monsters' Attack by +1!`);
+                return { success: true, message: 'Permanent attack boost applied' };
+                
+            case 'permanent_health_boost':
+                // Vitality Surge - permanent +5 health to all monsters
+                let healthBoostedCount = 0;
+                player.monsterField.forEach(monster => {
+                    if (monster && monster.isAlive()) {
+                        monster.maxHealth += 5;
+                        monster.currentHealth += 5;
+                        healthBoostedCount++;
+                    }
+                });
+                game.log(`${player.name}'s ${this.name} permanently increases all monsters' Health by +5!`);
+                return { success: true, message: 'Permanent health boost applied' };
+                
+            case 'fortify_fort':
+                // Fortify - increase fort defense
+                player.fort.defense += 3;
+                game.log(`${player.name}'s ${this.name} increases fort defense by 3!`);
+                return { success: true, message: 'Fort defense increased' };
                 
             default:
                 return { success: false, message: 'Unknown spell effect' };

@@ -139,6 +139,16 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    overflow: hidden;
+}
+
+.monster-image {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .monster-card:hover {
@@ -219,9 +229,9 @@ body {
     min-height: 100px;
     margin: 15px 0;
     padding: 15px;
-    background: rgba(139, 0, 0, 0.2);
+    background: rgba(108, 92, 231, 0.2);
     border-radius: 10px;
-    border: 2px dashed rgba(255, 107, 107, 0.5);
+    border: 2px dashed rgba(95, 61, 196, 0.5);
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
@@ -236,6 +246,17 @@ body {
     transition: all 0.3s;
     min-width: 100px;
     text-align: center;
+    color: #ffffff;
+}
+
+.spell-card.trap-card {
+    background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+    border-color: #5f3dc4;
+}
+
+.spell-card .card-name {
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.5);
 }
 
 .spell-card:hover {
@@ -340,6 +361,26 @@ body {
     max-width: 150px;
     text-align: center;
     position: relative;
+    overflow: hidden;
+    color: #ffffff;
+}
+
+.card-image {
+    width: 100%;
+    height: auto;
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.hand-card.monster .card-image {
+    max-height: 120px;
+}
+
+.hand-card.spell .card-image {
+    max-height: 100px;
 }
 
 .hand-card:hover {
@@ -357,8 +398,8 @@ body {
 }
 
 .hand-card.trap {
-    background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
-    border-color: #ff4757;
+    background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+    border-color: #5f3dc4;
 }
 
 .card-cost {
@@ -376,11 +417,16 @@ body {
     font-weight: bold;
     margin-bottom: 8px;
     font-size: 1em;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.5);
 }
 
 .card-stats {
     font-size: 0.85em;
     margin-top: 5px;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 3px rgba(0, 0, 0, 0.5);
+    line-height: 1.4;
 }
 
 .action-panel {

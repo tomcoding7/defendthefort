@@ -20,7 +20,9 @@ class Trap {
         const name = document.createElement('div');
         name.className = 'card-name';
         name.textContent = 'Trap';
-        name.style.opacity = '0.7';
+        name.style.color = '#ffffff';
+        name.style.textShadow = '1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.5)';
+        name.style.opacity = '0.9';
         
         const cost = document.createElement('div');
         cost.style.position = 'absolute';

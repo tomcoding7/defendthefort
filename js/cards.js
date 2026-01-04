@@ -14,6 +14,24 @@ class Card {
         card.className = `hand-card ${this.type}`;
         card.dataset.cardId = this.id;
         
+        // Add card image if available (optional - will hide if not found)
+        const imagePath = `assets/images/cards/${this.type}s/${this.id}.png`;
+        const cardImage = document.createElement('img');
+        cardImage.src = imagePath;
+        cardImage.className = 'card-image';
+        cardImage.alt = this.name;
+        cardImage.onerror = function() {
+            // Hide image if not found (fallback to text-only)
+            this.style.display = 'none';
+        };
+        cardImage.style.width = '100%';
+        cardImage.style.height = 'auto';
+        cardImage.style.maxHeight = this.type === 'monster' ? '120px' : '100px';
+        cardImage.style.objectFit = 'cover';
+        cardImage.style.borderRadius = '6px';
+        cardImage.style.marginBottom = '8px';
+        cardImage.style.display = 'block';
+        
         const cost = document.createElement('div');
         cost.className = 'card-cost';
         cost.textContent = `⭐${this.cost}`;
@@ -22,6 +40,7 @@ class Card {
         name.className = 'card-name';
         name.textContent = this.name;
         
+        card.appendChild(cardImage);
         card.appendChild(cost);
         card.appendChild(name);
         
@@ -40,7 +59,8 @@ class Card {
             desc.className = 'card-stats';
             desc.textContent = this.description;
             desc.style.fontSize = '0.8em';
-            desc.style.color = '#ff6b6b';
+            desc.style.color = '#ffffff';
+            desc.style.textShadow = '1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 3px rgba(0, 0, 0, 0.5)';
             card.appendChild(desc);
         } else {
             const desc = document.createElement('div');
@@ -85,9 +105,9 @@ const CARD_DATABASE = {
         type: 'monster',
         cost: 3,
         attack: 4,
-        defense: 5,
+        defense: 3,
         health: 8,
-        description: 'A sturdy defender with high defense.',
+        description: 'A sturdy defender with good defense.',
         abilities: []
     },
     mage: {
@@ -139,10 +159,10 @@ const CARD_DATABASE = {
         name: 'Stone Golem',
         type: 'monster',
         cost: 5,
-        attack: 4,
-        defense: 7,
-        health: 14,
-        description: 'An incredibly durable guardian.',
+        attack: 3,
+        defense: 6,
+        health: 18,
+        description: 'An incredibly durable guardian with weak attacks.',
         abilities: []
     },
     
@@ -278,6 +298,14 @@ const CARD_DATABASE = {
         description: 'All monsters gain +1 Attack permanently.',
         effect: 'permanent_attack_boost'
     },
+    vitality_surge: {
+        id: 'vitality_surge',
+        name: 'Vitality Surge',
+        type: 'spell',
+        cost: 4,
+        description: 'All monsters gain +5 Health permanently.',
+        effect: 'permanent_health_boost'
+    },
     
     // Traps (Like Yu-Gi-Oh but different)
     mirror_force: {
@@ -376,6 +404,7 @@ function getStarterDeck() {
         'fort_strike',
         'lightning_bolt',
         'rally',
+        'vitality_surge',
         // Traps
         'mirror_force',
         'counter_strike',

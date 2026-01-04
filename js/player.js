@@ -12,8 +12,8 @@ class Player {
         this.trapZone = [null, null, null, null, null]; // 5 trap slots (like Yu-Gi-Oh)
         this.graveyard = [];
         this.fort = {
-            hp: 100,
-            maxHp: 100,
+            hp: 50,
+            maxHp: 50,
             defense: 0,
             starGeneration: 0, // Bonus stars per turn
             level: 1,

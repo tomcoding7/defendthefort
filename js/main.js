@@ -189,6 +189,12 @@ function updateMonsterField(fieldId, player) {
             // Add click handlers for current player's monsters
             if (player.id === game.getCurrentPlayer().id) {
                 monsterElement.addEventListener('click', () => {
+                    // If in spell target mode, allow targeting own monsters
+                    if (window.spellTargetMode && selectedCard && selectedCard.type === 'spell') {
+                        handleTargetSelection(player, i);
+                        return;
+                    }
+                    
                     // Check if monster can still attack
                     if (!monster.canAttack()) {
                         game.log(`${monster.name} has already attacked this turn!`);
@@ -392,6 +398,29 @@ function handleCardClick(card, player, event) {
                         game.log(result.message);
                         updateUI();
                     }
+                }
+            } else {
+                game.log('Not enough Stars to play this card!');
+                updateUI();
+            }
+        } else if (card.type === 'trap') {
+            // Traps need to be placed in trap zone
+            if (player.canPlayCard(card)) {
+                // Find empty trap slot
+                const emptySlot = player.trapZone.findIndex(trap => trap === null);
+                if (emptySlot !== -1) {
+                    const result = player.playTrap(card, emptySlot);
+                    if (result.success) {
+                        game.log(`${player.name} sets ${card.name} in trap zone!`);
+                        animateCardPlay(cardElement);
+                        updateUI();
+                    } else {
+                        game.log(result.message);
+                        updateUI();
+                    }
+                } else {
+                    game.log('Trap zone is full!');
+                    updateUI();
                 }
             } else {
                 game.log('Not enough Stars to play this card!');
