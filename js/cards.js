@@ -158,7 +158,7 @@ const CARD_DATABASE = {
         id: 'golem',
         name: 'Stone Golem',
         type: 'monster',
-        cost: 5,
+        cost: 8,
         attack: 3,
         defense: 6,
         health: 18,
