@@ -10,18 +10,47 @@ class MusicPlayer {
         ];
         this.isPlaying = false;
         this.volume = 0.5; // Default volume (50%)
+        this.shuffleMode = true; // Enable shuffle/random by default
+        this.playedTracks = []; // Track recently played songs to avoid immediate repeats
         this.initializePlayer();
     }
 
     initializePlayer() {
         // Create audio element
         this.audio = new Audio();
-        this.audio.loop = true;
+        this.audio.loop = false; // Disable loop to allow track switching
         this.audio.volume = this.volume;
+        this.switchScheduled = false; // Track if we've scheduled a switch
         
-        // Handle track end (shouldn't happen with loop, but just in case)
+        // Handle track end - when a track finishes, play next random track
         this.audio.addEventListener('ended', () => {
-            this.playNext();
+            if (this.shuffleMode) {
+                this.playNext(); // Will play random next track
+            } else {
+                // Sequential mode: loop current track
+                this.audio.currentTime = 0;
+                if (this.isPlaying) {
+                    this.audio.play();
+                }
+            }
+        });
+        
+        // Auto-advance to next random track periodically when shuffle is enabled
+        // This switches tracks every ~90 seconds to keep music varied
+        this.audio.addEventListener('timeupdate', () => {
+            if (this.shuffleMode && this.isPlaying && this.audio.currentTime > 0) {
+                // Switch to random track every ~90 seconds
+                const switchInterval = 90; // 90 seconds
+                if (this.audio.currentTime >= switchInterval && !this.switchScheduled) {
+                    this.switchScheduled = true;
+                    setTimeout(() => {
+                        if (this.isPlaying) {
+                            this.playNext();
+                        }
+                        this.switchScheduled = false;
+                    }, 100);
+                }
+            }
         });
 
         // Handle errors
@@ -29,8 +58,13 @@ class MusicPlayer {
             console.warn('[MUSIC] Error loading track:', this.tracks[this.currentTrackIndex].name, e);
         });
 
-        // Load first track (but don't play yet - wait for battle start)
-        this.loadTrack(0);
+        // Load random first track if shuffle is enabled
+        if (this.shuffleMode) {
+            const randomIndex = Math.floor(Math.random() * this.tracks.length);
+            this.loadTrack(randomIndex);
+        } else {
+            this.loadTrack(0);
+        }
         this.isPlaying = false; // Ensure it starts as not playing
     }
 
@@ -44,6 +78,9 @@ class MusicPlayer {
             this.audio.pause();
             this.audio.src = track.file;
             this.audio.load();
+            
+            // Reset switch scheduling when loading new track
+            this.switchScheduled = false;
             
             // Try to play if it was playing before
             if (this.isPlaying) {
@@ -90,7 +127,18 @@ class MusicPlayer {
     }
 
     playNext() {
-        const nextIndex = (this.currentTrackIndex + 1) % this.tracks.length;
+        let nextIndex;
+        
+        if (this.shuffleMode) {
+            // Random mode: pick a random track, avoiding the current one
+            do {
+                nextIndex = Math.floor(Math.random() * this.tracks.length);
+            } while (nextIndex === this.currentTrackIndex && this.tracks.length > 1);
+        } else {
+            // Sequential mode: play next track in order
+            nextIndex = (this.currentTrackIndex + 1) % this.tracks.length;
+        }
+        
         this.loadTrack(nextIndex);
         if (this.isPlaying) {
             this.play();

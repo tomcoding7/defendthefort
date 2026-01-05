@@ -157,15 +157,16 @@ class Monster {
             card.style.opacity = '0.6';
         }
         
-        // Add monster image if available (using flexible naming like Card class)
-        const baseImagePath = `assets/images/cards/monsters/${this.id}`;
-        const possibleImagePaths = [
-            `${baseImagePath}.png`,
-            `${baseImagePath.replace(/_/g, '')}.png`, // e.g., valiantknight.png
-            `${baseImagePath.replace(/_/g, '-')}.png`, // e.g., valiant-knight.png
-            `${baseImagePath.replace(/_/g, '')}.jpg`,
-            `${baseImagePath.replace(/_/g, '-')}.jpg`,
-            `${baseImagePath}.jpg`
+        // Add monster image if available (using same logic as Card class)
+        const basePath = `assets/images/cards/monsters/`;
+        const imageVariations = [
+            `${this.id}.png`, // Exact match (e.g., knight.png, dragon.png)
+            `${this.id.replace(/_/g, '')}.png`, // Without underscore (e.g., valiantknight.png)
+            `${this.name.toLowerCase().replace(/\s+/g, '')}.png`, // From card name (e.g., valiantknight.png, bloodberserker.png)
+            `${this.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.png`, // Normalized name
+            `${this.id}.jpg`,
+            `${this.id.replace(/_/g, '')}.jpg`,
+            `${this.name.toLowerCase().replace(/\s+/g, '')}.jpg`
         ];
         
         const monsterImage = document.createElement('img');
@@ -178,19 +179,34 @@ class Monster {
         monsterImage.style.marginBottom = '8px';
         monsterImage.style.display = 'block';
         
-        let currentVariationIndex = 0;
-        const tryNextVariation = () => {
-            currentVariationIndex++;
-            if (currentVariationIndex < possibleImagePaths.length) {
-                monsterImage.src = possibleImagePaths[currentVariationIndex];
-            } else {
-                // Hide image if all variations fail
-                monsterImage.style.display = 'none';
-            }
-        };
+        // Use cached mapping if available (from Card class image detection)
+        // Access the global imageMappingCache from cards.js
+        const imageCache = (typeof window !== 'undefined' && window.imageMappingCache) || 
+                          (typeof imageMappingCache !== 'undefined' ? imageMappingCache : null);
         
-        monsterImage.onerror = tryNextVariation;
-        monsterImage.src = possibleImagePaths[0];
+        if (imageCache && imageCache[this.id]) {
+            monsterImage.src = imageCache[this.id];
+        } else {
+            // Fallback: try multiple filename variations
+            let currentVariationIndex = 0;
+            const tryNextVariation = () => {
+                currentVariationIndex++;
+                if (currentVariationIndex < imageVariations.length) {
+                    monsterImage.src = basePath + imageVariations[currentVariationIndex];
+                } else {
+                    // Hide image if all variations fail
+                    monsterImage.style.display = 'none';
+                }
+            };
+            
+            monsterImage.onerror = tryNextVariation;
+            monsterImage.src = basePath + imageVariations[0];
+        }
+        
+        // Final fallback: hide if image fails to load
+        monsterImage.addEventListener('error', () => {
+            monsterImage.style.display = 'none';
+        }, { once: true });
         monsterImage.style.width = '100%';
         monsterImage.style.height = '120px';
         monsterImage.style.objectFit = 'cover';

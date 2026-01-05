@@ -11,12 +11,341 @@ html, body {
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    /* Background will be set dynamically by JavaScript */
     min-height: 100vh;
     color: #fff;
     overflow-x: hidden;
     /* Prevent pull-to-refresh on mobile */
     overscroll-behavior-y: contain;
+    position: relative;
+    transition: background 2s ease-in-out; /* Smooth background transitions */
+}
+
+/* Random background color schemes */
+.body-theme-purple {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+}
+
+.body-theme-blue {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #667eea 100%);
+}
+
+.body-theme-red {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 50%, #f093fb 100%);
+}
+
+.body-theme-green {
+    background: linear-gradient(135deg, #30cfd0 0%, #330867 50%, #4facfe 100%);
+}
+
+.body-theme-orange {
+    background: linear-gradient(135deg, #fad961 0%, #f76b1c 50%, #fa709a 100%);
+}
+
+.body-theme-dark {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #7f8c8d 100%);
+}
+
+/* Animated background aura/smoke effects */
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.3;
+}
+
+/* Aura colors will be set dynamically based on theme */
+body::before {
+    animation: auraMove1 20s ease-in-out infinite alternate;
+}
+
+body::after {
+    animation: auraMove2 25s ease-in-out infinite alternate-reverse;
+}
+
+/* Purple theme aura */
+.body-theme-purple::before {
+    background: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(240, 147, 251, 0.3) 0%, transparent 50%);
+}
+
+.body-theme-purple::after {
+    background: radial-gradient(circle at 60% 30%, rgba(240, 147, 251, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 30% 70%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 90% 50%, rgba(118, 75, 162, 0.4) 0%, transparent 50%);
+}
+
+/* Blue theme aura */
+.body-theme-blue::before {
+    background: radial-gradient(circle at 20% 50%, rgba(79, 172, 254, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 242, 254, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(102, 126, 234, 0.3) 0%, transparent 50%);
+}
+
+.body-theme-blue::after {
+    background: radial-gradient(circle at 60% 30%, rgba(102, 126, 234, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 30% 70%, rgba(79, 172, 254, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 90% 50%, rgba(0, 242, 254, 0.4) 0%, transparent 50%);
+}
+
+/* Red theme aura */
+.body-theme-red::before {
+    background: radial-gradient(circle at 20% 50%, rgba(250, 112, 154, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(254, 225, 64, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(240, 147, 251, 0.3) 0%, transparent 50%);
+}
+
+.body-theme-red::after {
+    background: radial-gradient(circle at 60% 30%, rgba(240, 147, 251, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 30% 70%, rgba(250, 112, 154, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 90% 50%, rgba(254, 225, 64, 0.4) 0%, transparent 50%);
+}
+
+/* Green theme aura */
+.body-theme-green::before {
+    background: radial-gradient(circle at 20% 50%, rgba(48, 207, 208, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(51, 8, 103, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(79, 172, 254, 0.3) 0%, transparent 50%);
+}
+
+.body-theme-green::after {
+    background: radial-gradient(circle at 60% 30%, rgba(79, 172, 254, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 30% 70%, rgba(48, 207, 208, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 90% 50%, rgba(51, 8, 103, 0.4) 0%, transparent 50%);
+}
+
+/* Orange theme aura */
+.body-theme-orange::before {
+    background: radial-gradient(circle at 20% 50%, rgba(250, 217, 97, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(247, 107, 28, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(250, 112, 154, 0.3) 0%, transparent 50%);
+}
+
+.body-theme-orange::after {
+    background: radial-gradient(circle at 60% 30%, rgba(250, 112, 154, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 30% 70%, rgba(250, 217, 97, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 90% 50%, rgba(247, 107, 28, 0.4) 0%, transparent 50%);
+}
+
+/* Dark theme aura */
+.body-theme-dark::before {
+    background: radial-gradient(circle at 20% 50%, rgba(44, 62, 80, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(52, 73, 94, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(127, 140, 141, 0.3) 0%, transparent 50%);
+}
+
+.body-theme-dark::after {
+    background: radial-gradient(circle at 60% 30%, rgba(127, 140, 141, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 30% 70%, rgba(44, 62, 80, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 90% 50%, rgba(52, 73, 94, 0.4) 0%, transparent 50%);
+}
+
+@keyframes auraMove1 {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.3;
+    }
+    50% {
+        transform: translate(10%, -5%) scale(1.1);
+        opacity: 0.4;
+    }
+    100% {
+        transform: translate(-5%, 10%) scale(0.9);
+        opacity: 0.3;
+    }
+}
+
+@keyframes auraMove2 {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.3;
+    }
+    50% {
+        transform: translate(-8%, 8%) scale(1.15);
+        opacity: 0.4;
+    }
+    100% {
+        transform: translate(12%, -8%) scale(0.95);
+        opacity: 0.3;
+    }
+}
+
+/* Floating particles/smoke effects */
+.background-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    filter: blur(20px);
+    opacity: 0.4;
+}
+
+.particle-1 {
+    width: 200px;
+    height: 200px;
+    top: 10%;
+    left: 10%;
+    animation: float1 15s ease-in-out infinite;
+}
+
+.particle-2 {
+    width: 150px;
+    height: 150px;
+    top: 60%;
+    left: 20%;
+    animation: float2 18s ease-in-out infinite;
+}
+
+.particle-3 {
+    width: 180px;
+    height: 180px;
+    top: 30%;
+    right: 15%;
+    animation: float3 20s ease-in-out infinite;
+}
+
+.particle-4 {
+    width: 120px;
+    height: 120px;
+    bottom: 20%;
+    right: 25%;
+    animation: float4 16s ease-in-out infinite;
+}
+
+.particle-5 {
+    width: 160px;
+    height: 160px;
+    top: 50%;
+    left: 50%;
+    animation: float5 22s ease-in-out infinite;
+}
+
+.particle-6 {
+    width: 140px;
+    height: 140px;
+    bottom: 30%;
+    left: 30%;
+    animation: float6 17s ease-in-out infinite;
+}
+
+@keyframes float1 {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.3;
+    }
+    33% {
+        transform: translate(30px, -40px) scale(1.2);
+        opacity: 0.5;
+    }
+    66% {
+        transform: translate(-20px, 30px) scale(0.9);
+        opacity: 0.4;
+    }
+}
+
+@keyframes float2 {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.4;
+    }
+    33% {
+        transform: translate(-25px, 35px) scale(1.1);
+        opacity: 0.5;
+    }
+    66% {
+        transform: translate(40px, -25px) scale(0.95);
+        opacity: 0.3;
+    }
+}
+
+@keyframes float3 {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.3;
+    }
+    33% {
+        transform: translate(35px, 25px) scale(1.15);
+        opacity: 0.5;
+    }
+    66% {
+        transform: translate(-30px, -35px) scale(0.9);
+        opacity: 0.4;
+    }
+}
+
+@keyframes float4 {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.4;
+    }
+    33% {
+        transform: translate(-35px, -30px) scale(1.1);
+        opacity: 0.5;
+    }
+    66% {
+        transform: translate(25px, 40px) scale(0.95);
+        opacity: 0.3;
+    }
+}
+
+@keyframes float5 {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.3;
+    }
+    33% {
+        transform: translate(40px, -30px) scale(1.2);
+        opacity: 0.5;
+    }
+    66% {
+        transform: translate(-35px, 35px) scale(0.9);
+        opacity: 0.4;
+    }
+}
+
+@keyframes float6 {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.4;
+    }
+    33% {
+        transform: translate(-30px, 40px) scale(1.1);
+        opacity: 0.5;
+    }
+    66% {
+        transform: translate(30px, -25px) scale(0.95);
+        opacity: 0.3;
+    }
+}
+
+/* Reduce particle effects on mobile for performance */
+@media (max-width: 768px) {
+    .particle {
+        opacity: 0.2; /* More subtle on mobile */
+        filter: blur(15px);
+    }
+    
+    body::before,
+    body::after {
+        opacity: 0.2; /* More subtle aura on mobile */
+    }
 }
 
 .game-container {
@@ -26,6 +355,8 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    position: relative;
+    z-index: 1; /* Above background effects */
 }
 
 .game-header {
@@ -82,6 +413,17 @@ body {
     backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 255, 255, 0.2);
     flex-shrink: 0; /* Don't shrink player areas */
+    position: relative;
+    z-index: 1; /* Above background effects */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    /* Add padding to prevent character icon from overlapping content */
+    padding-right: 160px; /* Space for character icon on right side (player 1) */
+}
+
+/* Opponent area needs padding on left for character icon */
+.opponent-area {
+    padding-left: 160px; /* Space for character icon on left side (player 2) */
+    padding-right: 20px; /* Reset right padding for opponent */
 }
 
 /* Opponent area - no rotation so monster fields face each other */
@@ -124,15 +466,17 @@ body {
     pointer-events: none;
 }
 
-/* Player 1 avatar - bottom right corner, away from UI */
+/* Player 1 avatar - bottom right corner, but avoid HP area */
 .player-area.player-area .character-icon {
     bottom: 10px;
     right: 10px;
+    /* Position it lower to avoid overlapping with player-header/HP area */
+    /* The HP is in the player-header at the top of the player area */
 }
 
-/* Player 2 (opponent) avatar - top left corner, away from UI */
+/* Player 2 (opponent) avatar - top left corner, but avoid HP area */
 .opponent-area .character-icon {
-    top: 10px;
+    top: 60px; /* Move down from top to avoid player-header with HP */
     left: 10px;
 }
 
@@ -1390,11 +1734,21 @@ body {
     }
 
     .opponent-area .character-icon {
-        top: 2px;
+        top: 50px; /* Move down more on mobile to avoid HP area */
         left: 2px;
         width: 60px;
         height: 60px;
         border-width: 2px;
+    }
+    
+    /* Reduce padding on mobile since icons are smaller */
+    .player-area {
+        padding-right: 70px; /* Space for smaller character icon on mobile */
+    }
+    
+    .opponent-area {
+        padding-left: 70px; /* Space for smaller character icon on mobile */
+        padding-right: 8px;
     }
 
     .player-stats {
@@ -1420,25 +1774,62 @@ body {
 
     .spell-trap-row {
         flex-direction: row;
-        gap: 5px;
-        margin: 5px 0;
+        gap: 3px;
+        margin: 3px 0;
+        align-items: stretch; /* Make both same height */
     }
     
     .spell-trap-zone {
         min-height: 60px;
-        padding: 5px;
-        gap: 4px;
-        /* Limit to 3 slots on mobile */
-        max-width: 100%;
+        max-height: 60px;
+        padding: 3px;
+        gap: 3px;
+        flex: 1; /* Take available space */
         overflow-x: auto;
+        overflow-y: hidden;
+        display: flex;
+        flex-wrap: nowrap; /* Keep in one row */
+        align-items: center; /* Center cards vertically */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        scrollbar-width: thin; /* Thin scrollbar on Firefox */
+        scrollbar-color: rgba(255, 255, 255, 0.3) transparent; /* Custom scrollbar color */
+    }
+    
+    /* Custom scrollbar for webkit browsers (Chrome, Safari) */
+    .spell-trap-zone::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    .spell-trap-zone::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .spell-trap-zone::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+    }
+    
+    .spell-trap-zone::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Hide zone label on mobile to save space */
+    .spell-trap-zone .zone-label {
+        display: none;
+    }
+    
+    /* Hide graveyard label on mobile to save space */
+    .graveyard .zone-label {
+        display: none;
     }
     
     .spell-card, .empty-spell-trap-slot {
-        min-width: 50px;
-        max-width: 80px;
-        min-height: 60px;
-        font-size: 0.7em;
-        padding: 5px;
+        min-width: 45px;
+        max-width: 60px;
+        min-height: 54px;
+        max-height: 54px;
+        font-size: 0.65em;
+        padding: 3px;
         flex-shrink: 0; /* Don't shrink cards */
     }
     
@@ -1449,19 +1840,16 @@ body {
     }
     
     .graveyard {
-        min-width: 60px;
+        min-width: 50px;
+        max-width: 50px;
         min-height: 60px;
-        padding: 5px;
+        max-height: 60px;
+        padding: 3px;
+        flex-shrink: 0; /* Don't shrink graveyard */
     }
 
     .spell-zone, .trap-zone {
         min-width: 100%;
-    }
-
-    .graveyard {
-        min-width: 100%;
-        min-height: 80px;
-        padding: 8px;
     }
 
     .battle-zone {

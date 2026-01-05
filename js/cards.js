@@ -1,6 +1,10 @@
 // Card definitions and card system
 // Image mapping cache - automatically populated
 let imageMappingCache = null;
+// Make it globally accessible for Monster class
+if (typeof window !== 'undefined') {
+    window.imageMappingCache = null;
+}
 
 // Build image mapping by trying to load images and detecting what exists
 // Optimized for mobile: runs asynchronously without blocking UI
@@ -48,10 +52,13 @@ async function buildImageMapping() {
                 
                 // Try first variation synchronously (most common case)
                 const firstPath = `${basePath}${possibleNames[0]}.png`;
-                checkImageExistsFast(firstPath).then(exists => {
-                    if (exists) {
-                        imageMappingCache[cardId] = firstPath;
-                    } else {
+                        checkImageExistsFast(firstPath).then(exists => {
+                            if (exists) {
+                                imageMappingCache[cardId] = firstPath;
+                                if (typeof window !== 'undefined') {
+                                    window.imageMappingCache = imageMappingCache;
+                                }
+                            } else {
                         // Try other variations asynchronously
                         tryOtherVariations(cardId, basePath, possibleNames.slice(1));
                     }
@@ -75,6 +82,9 @@ async function buildImageMapping() {
             checkImageExistsFast(path).then(exists => {
                 if (exists) {
                     imageMappingCache[cardId] = path;
+                    if (typeof window !== 'undefined') {
+                        window.imageMappingCache = imageMappingCache;
+                    }
                 } else if (variations.length > 1) {
                     tryOtherVariations(cardId, basePath, variations.slice(1));
                 }

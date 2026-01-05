@@ -1253,8 +1253,18 @@ function detectDeviceType() {
     }
 }
 
+// Randomize background theme
+function randomizeBackground() {
+    const themes = ['purple', 'blue', 'red', 'green', 'orange', 'dark'];
+    const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+    document.body.className = `body-theme-${randomTheme}`;
+}
+
 // Initialize game when page loads
 document.addEventListener('DOMContentLoaded', () => {
+    // Randomize background theme
+    randomizeBackground();
+    
     detectDeviceType();
     try {
         // Show game mode selection IMMEDIATELY (don't wait for image mapping)
