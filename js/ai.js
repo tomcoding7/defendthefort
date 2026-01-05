@@ -125,6 +125,11 @@ class AI {
     }
 
     async attackWithMonsters() {
+        // First player cannot attack on first turn
+        if (this.game.turnNumber === 1 && this.player.id === 'player1') {
+            return;
+        }
+        
         const opponent = this.game.getOpponent(this.player);
         const myMonsters = this.player.getAliveMonsters();
         const opponentMonsters = opponent.getAliveMonsters();

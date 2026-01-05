@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Defend the Fort - Trading Card Game</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -13,6 +15,25 @@
             <div class="game-info">
                 <div class="turn-indicator" id="turnIndicator">Player 1's Turn</div>
                 <div class="turn-counter">Turn: <span id="turnNumber">1</span></div>
+            </div>
+            <div class="music-controls" id="musicControls">
+                <div class="music-info">
+                    <span id="currentTrackName">Game Music 1</span>
+                </div>
+                <div class="music-buttons">
+                    <button class="music-btn" id="musicPrev">⏮️</button>
+                    <button class="music-btn" id="musicPlayPause">▶️</button>
+                    <button class="music-btn" id="musicNext">⏭️</button>
+                </div>
+                <div class="music-volume-control">
+                    <span>🔊</span>
+                    <input type="range" id="musicVolume" min="0" max="100" value="50" class="volume-slider">
+                </div>
+                <select id="musicTrackSelect" class="music-select">
+                    <option value="0">Game Music 1</option>
+                    <option value="1">Battle Music</option>
+                    <option value="2">Boss Battle</option>
+                </select>
             </div>
         </header>
 
@@ -38,7 +59,7 @@
                 <div class="zone-label">Trap Zone</div>
             </div>
             <div class="monster-field" id="player2MonsterField">
-                <div class="zone-label">Monster Field (5 slots)</div>
+                <div class="zone-label" id="player2MonsterFieldLabel">Monster Field</div>
                 <div class="monster-slots"></div>
             </div>
         </div>
@@ -62,7 +83,7 @@
         <!-- Player Area -->
         <div class="player-area player-area">
             <div class="monster-field" id="player1MonsterField">
-                <div class="zone-label">Monster Field (5 slots)</div>
+                <div class="zone-label" id="player1MonsterFieldLabel">Monster Field</div>
                 <div class="monster-slots"></div>
             </div>
             <div class="spell-zone" id="player1SpellZone">
@@ -115,9 +136,19 @@
                 <button class="btn btn-primary" id="newGameBtn">New Game</button>
             </div>
         </div>
+
+        <!-- Battle Start Intro Screen -->
+        <div class="modal battle-intro-modal" id="battleIntroModal">
+            <div class="battle-intro-content">
+                <div class="battle-intro-title">DEFEND THE FORT</div>
+                <div class="battle-intro-subtitle">Reduce your enemy's Fort HP to zero!</div>
+                <div class="battle-intro-commence">COMMENCE!</div>
+            </div>
+        </div>
     </div>
 
 
+    <script src="js/music.js"></script>
     <script src="js/game.js"></script>
     <script src="js/cards.js"></script>
     <script src="js/monster.js"></script>

@@ -79,6 +79,11 @@ class Game {
     attackMonster(attackerPlayer, attackerSlot, targetPlayer, targetSlot) {
         if (this.gameOver) return { success: false, message: 'Game is over' };
         
+        // First player cannot attack on first turn
+        if (this.turnNumber === 1 && attackerPlayer.id === 'player1') {
+            return { success: false, message: 'First player cannot attack on their first turn!' };
+        }
+        
         const attacker = attackerPlayer.monsterField[attackerSlot];
         const target = targetPlayer.monsterField[targetSlot];
         
@@ -132,6 +137,14 @@ class Game {
                 targetPlayer.graveyard.push(target);
                 targetPlayer.monsterField[targetSlot] = null;
                 
+                // Check for trap cards that trigger on monster destruction
+                this.checkTraps(targetPlayer, 'monster_destroyed', {
+                    player: targetPlayer,
+                    destroyedMonster: target,
+                    destroyer: attacker,
+                    attackerPlayer: attackerPlayer
+                });
+                
                 // Animate monster destruction
                 if (window.animateMonsterDestroy) {
                     window.animateMonsterDestroy(targetPlayer.id === 'player1' ? 'player1' : 'player2', targetSlot);
@@ -144,6 +157,11 @@ class Game {
 
     attackFort(attackerPlayer, attackerSlot, targetPlayer) {
         if (this.gameOver) return { success: false, message: 'Game is over' };
+        
+        // First player cannot attack on first turn
+        if (this.turnNumber === 1 && attackerPlayer.id === 'player1') {
+            return { success: false, message: 'First player cannot attack on their first turn!' };
+        }
         
         const attacker = attackerPlayer.monsterField[attackerSlot];
         

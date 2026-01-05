@@ -52,3 +52,4 @@
 - Test images at different sizes to ensure they look good
 - Consider creating card templates for consistency
 
+

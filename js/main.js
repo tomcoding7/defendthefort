@@ -57,6 +57,65 @@ function setupEventListeners() {
             modal.style.display = 'none';
         }
     });
+
+    // Music player controls
+    setupMusicControls();
+
+    // Handle window resize for responsive monster field
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (game) {
+                updateUI();
+            }
+        }, 250); // Debounce resize events
+    });
+}
+
+function setupMusicControls() {
+    if (!musicPlayer) {
+        musicPlayer = initializeMusicPlayer();
+    }
+
+    const playPauseBtn = document.getElementById('musicPlayPause');
+    const prevBtn = document.getElementById('musicPrev');
+    const nextBtn = document.getElementById('musicNext');
+    const trackSelect = document.getElementById('musicTrackSelect');
+    const volumeSlider = document.getElementById('musicVolume');
+
+    if (playPauseBtn) {
+        playPauseBtn.addEventListener('click', () => {
+            musicPlayer.toggle();
+        });
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            musicPlayer.playPrevious();
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            musicPlayer.playNext();
+        });
+    }
+
+    if (trackSelect) {
+        trackSelect.addEventListener('change', (e) => {
+            musicPlayer.selectTrack(parseInt(e.target.value));
+        });
+    }
+
+    if (volumeSlider) {
+        volumeSlider.addEventListener('input', (e) => {
+            musicPlayer.setVolume(e.target.value / 100);
+        });
+    }
+
+    // Update UI initially
+    musicPlayer.updateUI();
 }
 
 function updateUI() {
@@ -170,6 +229,18 @@ function updateMonsterField(fieldId, player) {
         slots.innerHTML = '';
     }
     
+    // Detect mobile - show 3 slots on mobile, 5 on desktop
+    const isMobile = window.innerWidth <= 768;
+    const maxVisibleSlots = isMobile ? 3 : 5;
+    
+    // Update field label
+    const labelId = fieldId === 'player1MonsterField' ? 'player1MonsterFieldLabel' : 'player2MonsterFieldLabel';
+    const label = document.getElementById(labelId);
+    if (label) {
+        label.textContent = `Monster Field (${maxVisibleSlots} slots${isMobile ? ' visible' : ''})`;
+    }
+    
+    // Always iterate through all 5 slots (game logic uses 5), but hide slots 4-5 on mobile
     for (let i = 0; i < 5; i++) {
         const slot = document.createElement('div');
         slot.className = 'monster-card empty';
@@ -239,6 +310,21 @@ function updateMonsterField(fieldId, player) {
                 slot.addEventListener('click', () => {
                     handleEmptySlotClick(player, i);
                 });
+            }
+        }
+        
+        // On mobile, hide slots beyond index 2 (slots 4 and 5) visually
+        // Note: Game logic still uses 5 slots, but mobile UI only shows 3
+        if (isMobile && i >= 3) {
+            const elementToHide = monster && monster.isAlive() ? slots.lastElementChild : slot;
+            if (elementToHide) {
+                elementToHide.style.display = 'none';
+            }
+        } else if (isMobile) {
+            // Ensure visible slots are shown
+            const elementToShow = monster && monster.isAlive() ? slots.lastElementChild : slot;
+            if (elementToShow) {
+                elementToShow.style.display = '';
             }
         }
     }
@@ -433,6 +519,14 @@ function handleCardClick(card, player, event) {
 function handleEmptySlotClick(player, slotIndex) {
     if (player.id !== game.getCurrentPlayer().id) return;
     if (!selectedCard || selectedCard.type !== 'monster') return;
+    
+    // On mobile, prevent placing monsters in slots 4-5 (index 3-4)
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile && slotIndex >= 3) {
+        game.log('On mobile, only the first 3 monster slots are available. Please use slots 1-3.');
+        updateUI();
+        return;
+    }
     
     const result = player.playMonster(selectedCard, slotIndex);
     if (result.success) {
@@ -689,12 +783,89 @@ function showGameModeSelection() {
     document.body.appendChild(modal);
 }
 
+function showBattleIntro(aiEnabled) {
+    const introModal = document.getElementById('battleIntroModal');
+    if (!introModal) {
+        // If modal doesn't exist, just start the game
+        initializeGame(aiEnabled);
+        if (musicPlayer) {
+            musicPlayer.play();
+        }
+        return;
+    }
+
+    // Initialize the game FIRST so it's visible behind the intro
+    initializeGame(aiEnabled);
+    
+    // Small delay to ensure game UI is rendered
+    setTimeout(() => {
+        // Show the intro screen overlay
+        introModal.style.display = 'flex';
+        introModal.style.pointerEvents = 'auto'; // Block interactions during intro
+        introModal.style.opacity = '1';
+        
+        // Reset animations
+        const title = introModal.querySelector('.battle-intro-title');
+        const subtitle = introModal.querySelector('.battle-intro-subtitle');
+        const commence = introModal.querySelector('.battle-intro-commence');
+        
+        if (title) {
+            title.style.animation = 'none';
+            title.style.opacity = '0';
+            title.style.transform = 'translateY(-100px)';
+            setTimeout(() => {
+                title.style.animation = 'titleSlideIn 0.8s ease-out forwards';
+            }, 10);
+        }
+        
+        if (subtitle) {
+            subtitle.style.animation = 'none';
+            subtitle.style.opacity = '0';
+            subtitle.style.transform = 'translateX(calc(50vw + 100%))';
+            setTimeout(() => {
+                subtitle.style.animation = 'subtitleSlideIn 2.5s ease-in-out 0.5s forwards';
+            }, 10);
+        }
+        
+        if (commence) {
+            commence.style.animation = 'none';
+            commence.style.opacity = '0';
+            commence.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                commence.style.animation = 'commenceFadeIn 0.8s ease-out 1.5s forwards';
+            }, 10);
+        }
+
+        // After animations complete (about 3.5 seconds), fade out intro and start music
+        setTimeout(() => {
+            // Fade out the intro overlay
+            introModal.style.transition = 'opacity 0.5s ease-out';
+            introModal.style.opacity = '0';
+            
+            setTimeout(() => {
+                introModal.style.display = 'none';
+                introModal.style.pointerEvents = 'none'; // Allow clicks through
+            }, 500);
+            
+            // Auto-start music when battle begins
+            if (musicPlayer) {
+                musicPlayer.play().catch(error => {
+                    console.warn('[MUSIC] Autoplay prevented, user needs to interact first:', error);
+                    // Music will start when user clicks play button
+                });
+            }
+        }, 3500); // Total animation time: 0.8s title + 0.5s delay + 2.5s subtitle + 0.8s commence = ~3.5s
+    }, 100); // Small delay to ensure game is rendered
+}
+
 window.startGame = function(aiEnabled) {
     const modal = document.getElementById('gameModeModal');
     if (modal) {
         modal.remove();
     }
-    initializeGame(aiEnabled);
+    
+    // Show battle intro screen
+    showBattleIntro(aiEnabled);
 };
 
 // Animation functions
@@ -778,6 +949,10 @@ function animateCardPlay(cardElement) {
 // Initialize game when page loads
 document.addEventListener('DOMContentLoaded', () => {
     try {
+        // Initialize music player (but don't auto-play yet - wait for battle start)
+        musicPlayer = initializeMusicPlayer();
+        
+        // Show game mode selection
         showGameModeSelection();
     } catch (error) {
         console.error('[ERROR] Error on DOMContentLoaded:', error);

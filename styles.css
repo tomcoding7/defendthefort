@@ -10,6 +10,8 @@ body {
     min-height: 100vh;
     color: #fff;
     overflow-x: hidden;
+    /* Prevent pull-to-refresh on mobile */
+    overscroll-behavior-y: contain;
 }
 
 .game-container {
@@ -140,6 +142,7 @@ body {
     flex-direction: column;
     justify-content: space-between;
     overflow: hidden;
+    touch-action: manipulation;
 }
 
 .monster-image {
@@ -363,6 +366,7 @@ body {
     position: relative;
     overflow: hidden;
     color: #ffffff;
+    touch-action: manipulation;
 }
 
 .card-image {
@@ -445,6 +449,7 @@ body {
     cursor: pointer;
     transition: all 0.3s;
     color: #fff;
+    touch-action: manipulation;
 }
 
 .btn-primary {
@@ -639,6 +644,155 @@ body {
     }
 }
 
+/* Battle Intro Screen - Overlay on game */
+.battle-intro-modal {
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(3px);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+
+.battle-intro-content {
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.battle-intro-title {
+    font-size: 4em;
+    font-weight: 900;
+    color: #ffd700;
+    text-shadow: 
+        0 0 10px rgba(255, 215, 0, 0.8),
+        0 0 20px rgba(255, 215, 0, 0.6),
+        0 0 30px rgba(255, 215, 0, 0.4),
+        4px 4px 0px rgba(0, 0, 0, 0.8);
+    letter-spacing: 8px;
+    margin-bottom: 30px;
+    animation: titleSlideIn 0.8s ease-out;
+    transform: translateY(-100px);
+    opacity: 0;
+}
+
+.battle-intro-subtitle {
+    font-size: 1.5em;
+    color: #ffffff;
+    text-shadow: 
+        0 0 10px rgba(255, 255, 255, 0.5),
+        2px 2px 4px rgba(0, 0, 0, 0.8);
+    margin-bottom: 50px;
+    animation: subtitleSlideIn 2.5s ease-in-out 0.5s forwards;
+    opacity: 0;
+    line-height: 1.4;
+    white-space: nowrap;
+    position: absolute;
+    left: 50%;
+    transform: translateX(calc(50vw + 100%));
+}
+
+.battle-intro-commence {
+    font-size: 5em;
+    font-weight: 700;
+    color: #ffd700;
+    text-shadow: 
+        0 0 15px rgba(255, 215, 0, 0.6),
+        0 0 30px rgba(255, 215, 0, 0.4),
+        3px 3px 0px rgba(0, 0, 0, 0.8);
+    letter-spacing: 10px;
+    animation: commenceFadeIn 0.8s ease-out 1.5s forwards;
+    opacity: 0;
+    font-style: italic;
+}
+
+@keyframes titleSlideIn {
+    0% {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes subtitleSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(calc(50vw + 100%));
+    }
+    20% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+        transform: translateX(-50%);
+    }
+    80% {
+        opacity: 1;
+        transform: translateX(-50%);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(calc(-50vw - 100%));
+    }
+}
+
+@keyframes commenceFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile adjustments for battle intro */
+@media (max-width: 768px) {
+    .battle-intro-title {
+        font-size: 2.5em;
+        letter-spacing: 4px;
+        margin-bottom: 20px;
+    }
+
+    .battle-intro-subtitle {
+        font-size: 1.2em;
+        margin-bottom: 30px;
+    }
+
+    .battle-intro-commence {
+        font-size: 3em;
+        letter-spacing: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .battle-intro-title {
+        font-size: 2em;
+        letter-spacing: 3px;
+    }
+
+    .battle-intro-subtitle {
+        font-size: 1em;
+    }
+
+    .battle-intro-commence {
+        font-size: 2.5em;
+        letter-spacing: 4px;
+    }
+}
+
 /* Debug Console Styling */
 .debug-entry {
     padding: 3px 5px;
@@ -684,5 +838,365 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
+}
+
+/* Music Player Controls */
+.music-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.music-info {
+    font-size: 0.9em;
+    color: #ffd700;
+    min-width: 120px;
+    text-align: center;
+}
+
+.music-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.music-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s;
+    color: #fff;
+}
+
+.music-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.music-volume-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.volume-slider {
+    width: 100px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    background: #ffd700;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.volume-slider::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    background: #ffd700;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+.music-select {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    padding: 5px 10px;
+    color: #fff;
+    font-size: 0.9em;
+    cursor: pointer;
+    outline: none;
+}
+
+.music-select:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.music-select option {
+    background: #333;
+    color: #fff;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    /* Prevent text selection on touch devices for better UX */
+    * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Allow text selection in specific areas */
+    .log-content, .card-name, .monster-name {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+    }
+
+    .game-container {
+        padding: 10px;
+    }
+
+    .game-header h1 {
+        font-size: 1.8em;
+    }
+
+    .game-info {
+        flex-direction: column;
+        gap: 10px;
+        font-size: 1em;
+    }
+
+    .music-controls {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .music-info {
+        width: 100%;
+    }
+
+    .music-buttons {
+        justify-content: center;
+    }
+
+    .music-btn {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 10px 15px;
+        font-size: 1.2em;
+    }
+
+    .music-volume-control {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .volume-slider {
+        flex: 1;
+        max-width: 200px;
+        min-height: 44px;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+        width: 20px;
+        height: 20px;
+    }
+
+    .volume-slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+    }
+
+    .music-select {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px;
+        font-size: 1em;
+    }
+
+    /* Mobile: 3 monster slots instead of 5 */
+    .monster-slots {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    /* Hide slots 4 and 5 on mobile (they still exist in the array, just not displayed) */
+    .monster-slots .monster-card:nth-child(n+4) {
+        display: none;
+    }
+
+    .monster-field {
+        min-height: 150px;
+        padding: 10px;
+    }
+
+    .monster-card {
+        min-height: 140px;
+        padding: 12px;
+        touch-action: manipulation;
+    }
+
+    .monster-image {
+        height: 80px;
+    }
+
+    .player-area {
+        padding: 15px;
+        margin: 8px 0;
+    }
+
+    .player-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+        padding: 12px;
+    }
+
+    .player-stats {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .stat {
+        font-size: 1.1em;
+    }
+
+    .game-center {
+        flex-direction: column;
+        gap: 10px;
+        margin: 15px 0;
+    }
+
+    .graveyard {
+        min-width: 100%;
+        min-height: 100px;
+        padding: 12px;
+    }
+
+    .battle-zone {
+        min-height: 150px;
+        padding: 12px;
+    }
+
+    .log-content {
+        max-height: 120px;
+        font-size: 0.85em;
+    }
+
+    .bottom-panel {
+        flex-direction: column;
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .hand {
+        min-height: 140px;
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .hand-card {
+        min-width: 110px;
+        max-width: 130px;
+        min-height: 160px;
+        padding: 12px;
+        touch-action: manipulation;
+    }
+
+    .card-image {
+        max-height: 100px;
+    }
+
+    .action-panel {
+        width: 100%;
+        gap: 12px;
+    }
+
+    .btn {
+        min-height: 48px;
+        padding: 14px 20px;
+        font-size: 1.1em;
+        touch-action: manipulation;
+    }
+
+    .spell-zone, .trap-zone {
+        min-height: 90px;
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .spell-card {
+        min-width: 90px;
+        min-height: 100px;
+        padding: 10px;
+        touch-action: manipulation;
+    }
+
+    .zone-label {
+        font-size: 0.85em;
+        margin-bottom: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-header h1 {
+        font-size: 1.5em;
+    }
+
+    .game-container {
+        padding: 8px;
+    }
+
+    .monster-card {
+        min-height: 130px;
+        padding: 10px;
+    }
+
+    .monster-name {
+        font-size: 0.9em;
+    }
+
+    .monster-stats {
+        font-size: 0.8em;
+    }
+
+    .hand-card {
+        min-width: 100px;
+        max-width: 110px;
+        min-height: 150px;
+        padding: 10px;
+    }
+
+    .card-name {
+        font-size: 0.9em;
+    }
+
+    .card-stats {
+        font-size: 0.75em;
+    }
+
+    .btn {
+        min-height: 50px;
+        font-size: 1em;
+        padding: 12px 18px;
+    }
+
+    .player-area {
+        padding: 12px;
+    }
+
+    .monster-field {
+        padding: 8px;
+    }
+
+    .monster-slots {
+        gap: 6px;
+    }
 }
 
