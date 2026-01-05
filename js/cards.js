@@ -1,4 +1,59 @@
 // Card definitions and card system
+// Image mapping cache - automatically populated
+let imageMappingCache = null;
+
+// Build image mapping by trying to load images and detecting what exists
+async function buildImageMapping() {
+    if (imageMappingCache) return imageMappingCache;
+    
+    imageMappingCache = {};
+    const cardDatabase = CARD_DATABASE;
+    
+    // Helper to normalize names for matching
+    function normalizeName(name) {
+        return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+    
+    // For each card, try to find matching image files
+    for (const [cardId, cardData] of Object.entries(cardDatabase)) {
+        const type = cardData.type;
+        const basePath = `assets/images/cards/${type}s/`;
+        
+        // Generate possible filenames
+        const possibleNames = [
+            cardId, // Exact ID match
+            cardId.replace(/_/g, ''), // Without underscores
+            normalizeName(cardData.name), // From card name
+            cardData.name.toLowerCase().replace(/\s+/g, ''), // From card name (spaces removed)
+        ];
+        
+        // Try each variation
+        for (const name of possibleNames) {
+            const imagePath = `${basePath}${name}.png`;
+            // Check if image exists by trying to load it
+            const exists = await checkImageExists(imagePath);
+            if (exists) {
+                imageMappingCache[cardId] = imagePath;
+                break; // Found it, move to next card
+            }
+        }
+    }
+    
+    return imageMappingCache;
+}
+
+// Check if an image file exists
+function checkImageExists(url) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+        // Timeout after 1 second
+        setTimeout(() => resolve(false), 1000);
+    });
+}
+
 class Card {
     constructor(data) {
         this.id = data.id;
@@ -15,13 +70,41 @@ class Card {
         card.dataset.cardId = this.id;
         
         // Add card image if available (optional - will hide if not found)
-        const imagePath = `assets/images/cards/${this.type}s/${this.id}.png`;
         const cardImage = document.createElement('img');
-        cardImage.src = imagePath;
         cardImage.className = 'card-image';
         cardImage.alt = this.name;
+        
+        // Use cached mapping if available, otherwise try variations
+        if (imageMappingCache && imageMappingCache[this.id]) {
+            cardImage.src = imageMappingCache[this.id];
+        } else {
+            // Fallback: try multiple filename variations
+            const basePath = `assets/images/cards/${this.type}s/`;
+            const imageVariations = [
+                `${this.id}.png`, // Exact match (e.g., knight.png, reload.png)
+                `${this.id.replace(/_/g, '')}.png`, // Without underscore (e.g., lightningbolt.png)
+                `${this.name.toLowerCase().replace(/\s+/g, '')}.png`, // From card name (e.g., valiantknight.png, elitearcher.png)
+                `${this.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.png`, // Normalized name
+            ];
+            
+            let currentVariationIndex = 0;
+            cardImage.onerror = function() {
+                // Try next variation
+                currentVariationIndex++;
+                if (currentVariationIndex < imageVariations.length) {
+                    this.src = basePath + imageVariations[currentVariationIndex];
+                } else {
+                    // Hide image if all variations fail (fallback to text-only)
+                    this.style.display = 'none';
+                }
+            };
+            
+            // Start with first variation
+            cardImage.src = basePath + imageVariations[0];
+        }
+        
+        // Hide image if it fails to load
         cardImage.onerror = function() {
-            // Hide image if not found (fallback to text-only)
             this.style.display = 'none';
         };
         cardImage.style.width = '100%';

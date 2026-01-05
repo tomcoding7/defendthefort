@@ -1070,8 +1070,14 @@ function animateCardPlay(cardElement) {
 }
 
 // Initialize game when page loads
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     try {
+        // Build image mapping cache (detects available images)
+        if (typeof buildImageMapping === 'function') {
+            await buildImageMapping();
+            console.log('[IMAGES] Image mapping built:', imageMappingCache);
+        }
+        
         // Initialize music player (but don't auto-play yet - wait for battle start)
         musicPlayer = initializeMusicPlayer();
         
