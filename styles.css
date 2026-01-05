@@ -534,25 +534,57 @@ body::after {
     min-height: 200px;
     margin: 15px 0;
     padding: 15px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
-    border: 2px dashed rgba(255, 255, 255, 0.3);
+    background: 
+        /* Grid pattern overlay */
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        /* Base gradient */
+        linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%);
+    background-size: 20px 20px, 20px 20px, 100% 100%;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        inset 0 0 30px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(102, 126, 234, 0.3),
+        0 4px 15px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Add a subtle glow effect to the field */
+.monster-field::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.monster-field > * {
+    position: relative;
+    z-index: 1;
 }
 
 .monster-slots {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    gap: 12px;
     margin-top: 10px;
+    position: relative;
+    z-index: 1;
 }
 
 .monster-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.9) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
     padding: 10px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     position: relative;
     min-height: 150px;
     display: flex;
@@ -560,6 +592,24 @@ body::after {
     justify-content: space-between;
     overflow: hidden;
     touch-action: manipulation;
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 0 10px rgba(102, 126, 234, 0.3);
+    backdrop-filter: blur(5px);
+}
+
+/* Add a subtle inner glow */
+.monster-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    border-radius: 10px;
 }
 
 .monster-image {
@@ -572,21 +622,45 @@ body::after {
 }
 
 .monster-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 20px rgba(255, 255, 255, 0.3);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 
+        0 8px 25px rgba(255, 255, 255, 0.4),
+        0 0 20px rgba(255, 215, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
     border-color: #ffd700;
+    z-index: 10;
 }
 
 .monster-card.empty {
-    background: rgba(0, 0, 0, 0.2);
-    border: 2px dashed rgba(255, 255, 255, 0.2);
+    background: 
+        /* Grid pattern for empty slots */
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        /* Base */
+        rgba(0, 0, 0, 0.3);
+    background-size: 15px 15px, 15px 15px, 100% 100%;
+    border: 2px dashed rgba(255, 255, 255, 0.25);
     cursor: default;
+    box-shadow: 
+        inset 0 0 20px rgba(0, 0, 0, 0.3),
+        0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .monster-card.empty:hover {
     transform: none;
-    box-shadow: none;
-    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        inset 0 0 20px rgba(0, 0, 0, 0.3),
+        0 2px 5px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    background: 
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        rgba(0, 0, 0, 0.35);
+    background-size: 15px 15px, 15px 15px, 100% 100%;
+}
+
+.monster-card.empty::before {
+    display: none; /* Remove glow effect for empty slots */
 }
 
 .monster-name {
@@ -1677,6 +1751,7 @@ body::after {
     .monster-field {
         min-height: 150px;
         padding: 10px;
+        background-size: 15px 15px, 15px 15px, 100% 100%; /* Smaller grid on mobile */
     }
 
     .monster-card {
