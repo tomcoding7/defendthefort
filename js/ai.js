@@ -100,20 +100,24 @@ class AI {
     async upgradeMonsters() {
         const aliveMonsters = this.player.getAliveMonsters();
         
-        // Upgrade monsters with low attack first
+        // Upgrade monsters with low attack first (respecting upgrade limits)
         for (let i = 0; i < this.player.monsterField.length; i++) {
             const monster = this.player.monsterField[i];
             if (monster && monster.isAlive() && this.player.stars >= 2) {
-                // Upgrade weapon if attack is low
-                if (monster.attack < 6 && this.player.stars >= 2) {
+                // Upgrade weapon if attack is low and we have upgrade slots available
+                if (monster.attack < 6 && 
+                    this.player.stars >= 2 &&
+                    this.player.attackUpgradesThisTurn < this.player.maxAttackUpgrades) {
                     const result = this.player.upgradeMonsterWeapon(i);
                     if (result.success) {
                         this.game.log(`🤖 ${this.player.name} upgrades ${monster.name}'s weapon!`);
                         await this.delay(600);
                     }
                 }
-                // Upgrade armor if health is low
-                else if (monster.currentHealth < monster.maxHealth * 0.5 && this.player.stars >= 2) {
+                // Upgrade armor if health is low and we have upgrade slots available
+                else if (monster.currentHealth < monster.maxHealth * 0.5 && 
+                         this.player.stars >= 2 &&
+                         this.player.defenseUpgradesThisTurn < this.player.maxDefenseUpgrades) {
                     const result = this.player.upgradeMonsterArmor(i);
                     if (result.success) {
                         this.game.log(`🤖 ${this.player.name} upgrades ${monster.name}'s armor!`);

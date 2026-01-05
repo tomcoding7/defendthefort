@@ -122,6 +122,14 @@ class Game {
                         attackerPlayer.graveyard.push(attacker);
                         attackerPlayer.monsterField[attackerSlot] = null;
                         
+                        // Check for trap cards that trigger on monster destruction
+                        this.checkTraps(attackerPlayer, 'monster_destroyed', {
+                            player: attackerPlayer,
+                            destroyedMonster: attacker,
+                            destroyer: target,
+                            attackerPlayer: targetPlayer
+                        });
+                        
                         // Animate attacker destruction
                         if (window.animateMonsterDestroy) {
                             window.animateMonsterDestroy(attackerPlayer.id === 'player1' ? 'player1' : 'player2', attackerSlot);
@@ -218,6 +226,30 @@ class Game {
 
     getLogEntries() {
         return this.battleLog.slice(-20); // Return last 20 entries
+    }
+
+    checkTraps(player, eventType, context = {}) {
+        // Check all traps in the player's spell/trap zone
+        if (!player.spellTrapZone) return;
+        
+        player.spellTrapZone.forEach((card, index) => {
+            // Check if it's a trap (not a spell)
+            if (card && card.constructor.name === 'Trap' && !card.activated) {
+                // Check if this trap should trigger
+                if (card.checkTrigger(this, player, eventType, context)) {
+                    // Activate the trap
+                    const result = card.activate(this, player, context);
+                    if (result.success) {
+                        // Remove trap from zone after activation (traps are one-time use)
+                        player.spellTrapZone[index] = null;
+                        // Update UI if available
+                        if (window.updateUI) {
+                            window.updateUI();
+                        }
+                    }
+                }
+            }
+        });
     }
 }
 

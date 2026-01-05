@@ -59,9 +59,28 @@ class Trap {
                 
             case 'counter_damage':
                 // Deal damage when monster is destroyed
-                if (context.destroyer) {
+                if (context.destroyer && context.destroyer.isAlive()) {
                     context.destroyer.takeDamage(5);
-                    game.log(`⚔️ ${player.name}'s ${this.name} deals 5 damage to attacker!`);
+                    game.log(`⚔️ ${player.name}'s ${this.name} deals 5 damage to ${context.destroyer.name}!`);
+                    
+                    // Check if destroyer was killed by the trap
+                    if (!context.destroyer.isAlive()) {
+                        game.log(`${context.destroyer.name} is defeated by the trap!`);
+                        // Move destroyer to graveyard if it dies
+                        const destroyerPlayer = context.attackerPlayer;
+                        if (destroyerPlayer) {
+                            const destroyerSlot = destroyerPlayer.monsterField.findIndex(m => m === context.destroyer);
+                            if (destroyerSlot !== -1) {
+                                destroyerPlayer.graveyard.push(context.destroyer);
+                                destroyerPlayer.monsterField[destroyerSlot] = null;
+                                if (window.animateMonsterDestroy) {
+                                    window.animateMonsterDestroy(destroyerPlayer.id === 'player1' ? 'player1' : 'player2', destroyerSlot);
+                                }
+                                // Check win condition after trap kill
+                                game.checkWinCondition();
+                            }
+                        }
+                    }
                     return { success: true, message: 'Counter damage dealt' };
                 }
                 break;

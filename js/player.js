@@ -7,10 +7,14 @@ class Player {
         this.starsPerTurn = 2;
         this.hand = [];
         this.deck = [];
-        this.monsterField = [null, null, null, null, null]; // 5 slots
-        this.spellZone = [];
-        this.trapZone = [null, null, null, null, null]; // 5 trap slots (like Yu-Gi-Oh)
+        this.monsterField = [null, null, null, null]; // 4 slots
+        this.spellTrapZone = [null, null, null, null, null]; // 5 slots for spells or traps
         this.graveyard = [];
+        // Upgrade limits per turn
+        this.attackUpgradesThisTurn = 0;
+        this.defenseUpgradesThisTurn = 0;
+        this.maxAttackUpgrades = 1; // Can be increased by spells/traps
+        this.maxDefenseUpgrades = 1; // Can be increased by spells/traps
         this.fort = {
             hp: 50,
             maxHp: 50,
@@ -88,6 +92,12 @@ class Player {
                 monster.resetTurn();
             }
         });
+        
+        // Reset upgrade counts for new turn
+        this.attackUpgradesThisTurn = 0;
+        this.defenseUpgradesThisTurn = 0;
+        this.maxAttackUpgrades = 1; // Reset to default (spells/traps can increase this)
+        this.maxDefenseUpgrades = 1; // Reset to default (spells/traps can increase this)
     }
 
     canPlayCard(card) {
@@ -95,7 +105,7 @@ class Player {
     }
 
     playMonster(card, slotIndex) {
-        if (slotIndex < 0 || slotIndex >= 5) {
+        if (slotIndex < 0 || slotIndex >= 4) {
             return { success: false, message: 'Invalid slot' };
         }
         
@@ -125,7 +135,7 @@ class Player {
         return { success: true, monster: monster };
     }
 
-    playSpell(card) {
+    playSpell(card, zoneIndex = null) {
         if (!this.canPlayCard(card)) {
             return { success: false, message: 'Not enough Stars' };
         }
@@ -134,8 +144,22 @@ class Player {
             return { success: false, message: 'Not a spell card' };
         }
         
+        // Find empty slot if not specified
+        if (zoneIndex === null) {
+            zoneIndex = this.spellTrapZone.findIndex(slot => slot === null);
+        }
+        
+        if (zoneIndex < 0 || zoneIndex >= 5) {
+            return { success: false, message: 'Invalid spell/trap slot' };
+        }
+        
+        if (this.spellTrapZone[zoneIndex] !== null) {
+            return { success: false, message: 'Spell/trap slot already occupied' };
+        }
+        
         this.stars -= card.cost;
         const spell = new Spell(card.data);
+        this.spellTrapZone[zoneIndex] = spell;
         
         // Remove card from hand
         const handIndex = this.hand.findIndex(c => c.id === card.id);
@@ -146,15 +170,7 @@ class Player {
         return { success: true, spell: spell };
     }
 
-    playTrap(card, trapZoneIndex) {
-        if (trapZoneIndex < 0 || trapZoneIndex >= 5) {
-            return { success: false, message: 'Invalid trap slot' };
-        }
-        
-        if (this.trapZone[trapZoneIndex] !== null) {
-            return { success: false, message: 'Trap slot already occupied' };
-        }
-        
+    playTrap(card, zoneIndex = null) {
         if (!this.canPlayCard(card)) {
             return { success: false, message: 'Not enough Stars' };
         }
@@ -163,9 +179,22 @@ class Player {
             return { success: false, message: 'Not a trap card' };
         }
         
+        // Find empty slot if not specified
+        if (zoneIndex === null) {
+            zoneIndex = this.spellTrapZone.findIndex(slot => slot === null);
+        }
+        
+        if (zoneIndex < 0 || zoneIndex >= 5) {
+            return { success: false, message: 'Invalid spell/trap slot' };
+        }
+        
+        if (this.spellTrapZone[zoneIndex] !== null) {
+            return { success: false, message: 'Spell/trap slot already occupied' };
+        }
+        
         this.stars -= card.cost;
         const trap = new Trap(card.data);
-        this.trapZone[trapZoneIndex] = trap;
+        this.spellTrapZone[zoneIndex] = trap;
         
         // Remove card from hand
         const handIndex = this.hand.findIndex(c => c.id === card.id);
@@ -194,8 +223,14 @@ class Player {
             return { success: false, message: 'Not enough Stars (need 2)' };
         }
         
+        // Check upgrade limit
+        if (this.attackUpgradesThisTurn >= this.maxAttackUpgrades) {
+            return { success: false, message: `You can only upgrade attack ${this.maxAttackUpgrades} time(s) per turn!` };
+        }
+        
         this.stars -= 2;
         monster.upgradeWeapon();
+        this.attackUpgradesThisTurn++;
         return { success: true, message: 'Weapon upgraded' };
     }
 
@@ -209,9 +244,27 @@ class Player {
             return { success: false, message: 'Not enough Stars (need 2)' };
         }
         
+        // Check upgrade limit
+        if (this.defenseUpgradesThisTurn >= this.maxDefenseUpgrades) {
+            return { success: false, message: `You can only upgrade defense ${this.maxDefenseUpgrades} time(s) per turn!` };
+        }
+        
         this.stars -= 2;
         monster.upgradeArmor();
+        this.defenseUpgradesThisTurn++;
         return { success: true, message: 'Armor upgraded' };
+    }
+    
+    // Allow spells/traps to grant extra upgrade opportunities
+    grantExtraUpgrade(type) {
+        if (type === 'attack') {
+            this.maxAttackUpgrades++;
+        } else if (type === 'defense') {
+            this.maxDefenseUpgrades++;
+        } else if (type === 'both') {
+            this.maxAttackUpgrades++;
+            this.maxDefenseUpgrades++;
+        }
     }
 
     upgradeFort(upgradeType) {

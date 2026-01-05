@@ -39,8 +39,14 @@
 
         <!-- Opponent Area -->
         <div class="player-area opponent-area">
+            <div class="character-icon" id="player2CharacterIcon">
+                <img src="" alt="Player 2" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="character-icon-placeholder" style="display: none;">👤</div>
+            </div>
             <div class="player-header">
-                <div class="player-name">Player 2</div>
+                <div class="player-info">
+                    <div class="player-name">Player 2</div>
+                </div>
                 <div class="player-stats">
                     <div class="stat">
                         <span class="stat-label">⭐ Stars:</span>
@@ -52,11 +58,13 @@
                     </div>
                 </div>
             </div>
-            <div class="spell-zone" id="player2SpellZone">
-                <div class="zone-label">Spell Zone</div>
-            </div>
-            <div class="trap-zone" id="player2TrapZone">
-                <div class="zone-label">Trap Zone</div>
+            <div class="spell-trap-row">
+                <div class="spell-trap-zone" id="player2SpellTrapZone">
+                    <div class="zone-label">Spell/Trap Zone</div>
+                </div>
+                <div class="graveyard opponent-graveyard" id="player2Graveyard">
+                    <div class="zone-label">Graveyard</div>
+                </div>
             </div>
             <div class="monster-field" id="player2MonsterField">
                 <div class="zone-label" id="player2MonsterFieldLabel">Monster Field</div>
@@ -66,17 +74,12 @@
 
         <!-- Game Board Center -->
         <div class="game-center">
-            <div class="graveyard opponent-graveyard" id="player2Graveyard">
-                <div class="zone-label">Graveyard</div>
-            </div>
-            <div class="battle-zone">
+            <button class="battle-log-toggle" id="battleLogToggle">📜 Battle Log</button>
+            <div class="battle-zone" id="battleZone" style="display: none;">
                 <div class="battle-log" id="battleLog">
                     <div class="log-header">Battle Log</div>
                     <div class="log-content" id="logContent"></div>
                 </div>
-            </div>
-            <div class="graveyard player-graveyard" id="player1Graveyard">
-                <div class="zone-label">Graveyard</div>
             </div>
         </div>
 
@@ -86,14 +89,22 @@
                 <div class="zone-label" id="player1MonsterFieldLabel">Monster Field</div>
                 <div class="monster-slots"></div>
             </div>
-            <div class="spell-zone" id="player1SpellZone">
-                <div class="zone-label">Spell Zone</div>
+            <div class="spell-trap-row">
+                <div class="spell-trap-zone" id="player1SpellTrapZone">
+                    <div class="zone-label">Spell/Trap Zone</div>
+                </div>
+                <div class="graveyard player-graveyard" id="player1Graveyard">
+                    <div class="zone-label">Graveyard</div>
+                </div>
             </div>
-            <div class="trap-zone" id="player1TrapZone">
-                <div class="zone-label">Trap Zone</div>
+            <div class="character-icon" id="player1CharacterIcon">
+                <img src="" alt="Player 1" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="character-icon-placeholder" style="display: none;">👤</div>
             </div>
             <div class="player-header">
-                <div class="player-name">Player 1</div>
+                <div class="player-info">
+                    <div class="player-name">Player 1</div>
+                </div>
                 <div class="player-stats">
                     <div class="stat">
                         <span class="stat-label">⭐ Stars:</span>
@@ -142,8 +153,13 @@
             <div class="battle-intro-content">
                 <div class="battle-intro-title">DEFEND THE FORT</div>
                 <div class="battle-intro-subtitle">Reduce your enemy's Fort HP to zero!</div>
+                <div class="battle-intro-narrator" id="battleIntroNarrator"></div>
                 <div class="battle-intro-commence">COMMENCE!</div>
             </div>
+            <!-- Voice audio for intro -->
+            <audio id="introVoiceAudio" preload="auto">
+                <source src="assets/voice/letitcommence.mp3" type="audio/mpeg">
+            </audio>
         </div>
     </div>
 

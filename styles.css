@@ -57,13 +57,7 @@ body {
     border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.opponent-area {
-    transform: rotate(180deg);
-}
-
-.opponent-area > * {
-    transform: rotate(180deg);
-}
+/* Opponent area - no rotation so monster fields face each other */
 
 .player-header {
     display: flex;
@@ -73,6 +67,58 @@ body {
     padding: 10px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
+    position: relative;
+}
+
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.player-area {
+    position: relative;
+}
+
+.character-icon {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.4);
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    position: fixed;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Player 1 avatar - bottom right corner, away from UI */
+.player-area.player-area .character-icon {
+    bottom: 10px;
+    right: 10px;
+}
+
+/* Player 2 (opponent) avatar - top left corner, away from UI */
+.opponent-area .character-icon {
+    top: 10px;
+    left: 10px;
+}
+
+.character-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.character-icon-placeholder {
+    font-size: 4em;
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .player-name {
@@ -124,7 +170,7 @@ body {
 
 .monster-slots {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     margin-top: 10px;
 }
@@ -216,9 +262,10 @@ body {
     opacity: 0.9;
 }
 
-.spell-zone {
+.spell-trap-zone {
     min-height: 100px;
-    margin: 15px 0;
+    min-width: 300px;
+    flex: 1;
     padding: 15px;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 10px;
@@ -228,16 +275,15 @@ body {
     flex-wrap: wrap;
 }
 
-.trap-zone {
+.empty-slot {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 2px dashed rgba(255, 255, 255, 0.2) !important;
+    min-width: 80px;
     min-height: 100px;
-    margin: 15px 0;
-    padding: 15px;
-    background: rgba(108, 92, 231, 0.2);
-    border-radius: 10px;
-    border: 2px dashed rgba(95, 61, 196, 0.5);
     display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
 }
 
 .spell-card {
@@ -276,27 +322,53 @@ body {
 
 .game-center {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
     margin: 20px 0;
-    gap: 20px;
+    gap: 10px;
 }
 
-.graveyard {
-    min-width: 120px;
-    min-height: 150px;
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-    border: 2px solid rgba(139, 0, 0, 0.5);
+.battle-log-toggle {
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.battle-log-toggle:hover {
+    background: rgba(0, 0, 0, 0.7);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
 }
 
 .battle-zone {
-    flex: 1;
+    width: 100%;
+    max-width: 600px;
     min-height: 200px;
     padding: 15px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 10px;
+}
+
+.spell-trap-row {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+    align-items: flex-start;
+}
+
+.graveyard {
+    min-width: 100px;
+    min-height: 100px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    border: 2px solid rgba(139, 0, 0, 0.5);
+    flex-shrink: 0;
 }
 
 .battle-log {
@@ -657,6 +729,11 @@ body {
     transition: opacity 0.5s ease-out;
 }
 
+/* Hide audio element */
+#introVoiceAudio {
+    display: none;
+}
+
 .battle-intro-content {
     text-align: center;
     width: 100%;
@@ -700,6 +777,24 @@ body {
     transform: translateX(calc(50vw + 100%));
 }
 
+.battle-intro-narrator {
+    font-size: 1.8em;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 
+        0 0 10px rgba(255, 255, 255, 0.6),
+        0 0 20px rgba(255, 255, 255, 0.4),
+        2px 2px 4px rgba(0, 0, 0, 0.8);
+    letter-spacing: 3px;
+    animation: narratorFadeIn 0.6s ease-out 1s forwards, narratorFadeOut 0.6s ease-out 2.5s forwards;
+    opacity: 0;
+    font-style: italic;
+    text-align: center;
+    max-width: 90%;
+    margin: 20px 0;
+    line-height: 1.4;
+}
+
 .battle-intro-commence {
     font-size: 5em;
     font-weight: 700;
@@ -709,7 +804,7 @@ body {
         0 0 30px rgba(255, 215, 0, 0.4),
         3px 3px 0px rgba(0, 0, 0, 0.8);
     letter-spacing: 10px;
-    animation: commenceFadeIn 0.8s ease-out 1.5s forwards;
+    animation: commenceFadeIn 0.8s ease-out 2.8s forwards;
     opacity: 0;
     font-style: italic;
 }
@@ -747,6 +842,28 @@ body {
     }
 }
 
+@keyframes narratorFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes narratorFadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
 @keyframes commenceFadeIn {
     0% {
         opacity: 0;
@@ -771,6 +888,11 @@ body {
         margin-bottom: 30px;
     }
 
+    .battle-intro-narrator {
+        font-size: 1.4em;
+        letter-spacing: 2px;
+    }
+
     .battle-intro-commence {
         font-size: 3em;
         letter-spacing: 6px;
@@ -785,6 +907,11 @@ body {
 
     .battle-intro-subtitle {
         font-size: 1em;
+    }
+
+    .battle-intro-narrator {
+        font-size: 1.2em;
+        letter-spacing: 1px;
     }
 
     .battle-intro-commence {
@@ -1019,14 +1146,14 @@ body {
         font-size: 1em;
     }
 
-    /* Mobile: 3 monster slots instead of 5 */
+    /* Mobile: 3 monster slots instead of 4 */
     .monster-slots {
         grid-template-columns: repeat(3, 1fr);
         gap: 8px;
     }
 
-    /* Hide slots 4 and 5 on mobile (they still exist in the array, just not displayed) */
-    .monster-slots .monster-card:nth-child(n+4) {
+    /* Hide slot 4 on mobile (index 3) */
+    .monster-slots .monster-card:nth-child(4) {
         display: none;
     }
 
@@ -1057,6 +1184,31 @@ body {
         padding: 12px;
     }
 
+    .player-info {
+        justify-content: center;
+    }
+
+    .character-icon {
+        width: 120px;
+        height: 120px;
+        border-width: 3px;
+    }
+
+    .player-area.player-area .character-icon {
+        bottom: 5px;
+        right: 5px;
+        width: 100px;
+        height: 100px;
+    }
+
+    .opponent-area .character-icon {
+        top: 5px;
+        left: 5px;
+        width: 100px;
+        height: 100px;
+        height: 120px;
+    }
+
     .player-stats {
         justify-content: center;
         flex-wrap: wrap;
@@ -1070,13 +1222,22 @@ body {
     .game-center {
         flex-direction: column;
         gap: 10px;
-        margin: 15px 0;
+        margin: 10px 0;
+    }
+
+    .spell-trap-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .spell-zone, .trap-zone {
+        min-width: 100%;
     }
 
     .graveyard {
         min-width: 100%;
-        min-height: 100px;
-        padding: 12px;
+        min-height: 80px;
+        padding: 8px;
     }
 
     .battle-zone {

@@ -6,6 +6,9 @@ let upgradeMode = null; // 'weapon', 'armor', or null
 
 function initializeGame(aiEnabled = false) {
     try {
+        // Reset AI avatar selection for new game
+        aiAvatarSelected = null;
+        
         game = new Game();
         game.initialize(aiEnabled);
         
@@ -60,6 +63,21 @@ function setupEventListeners() {
 
     // Music player controls
     setupMusicControls();
+
+    // Battle log toggle
+    const battleLogToggle = document.getElementById('battleLogToggle');
+    const battleZone = document.getElementById('battleZone');
+    if (battleLogToggle && battleZone) {
+        battleLogToggle.addEventListener('click', () => {
+            if (battleZone.style.display === 'none') {
+                battleZone.style.display = 'block';
+                battleLogToggle.textContent = '📜 Hide Log';
+            } else {
+                battleZone.style.display = 'none';
+                battleLogToggle.textContent = '📜 Battle Log';
+            }
+        });
+    }
 
     // Handle window resize for responsive monster field
     let resizeTimeout;
@@ -143,6 +161,10 @@ function updateUI() {
         const p2FortHP = document.getElementById('player2FortHP');
         p2FortHP.textContent = player2.fort.hp;
         
+        // Update character icons
+        updateCharacterIcon('player1CharacterIcon', player1);
+        updateCharacterIcon('player2CharacterIcon', player2);
+        
         // Make opponent's fort clickable if attackable
     const opponent = game.getOpponent(currentPlayer);
     
@@ -181,17 +203,9 @@ function updateUI() {
     // Update hands
     updateHand('playerHand', player1);
     
-    // Update spell zones
-    updateSpellZone('player1SpellZone', player1);
-    updateSpellZone('player2SpellZone', player2);
-    
-        // Update trap zones (if they exist - optional feature)
-        try {
-            updateTrapZone('player1TrapZone', player1);
-            updateTrapZone('player2TrapZone', player2);
-        } catch (error) {
-            // Trap zones are optional, ignore if they don't exist
-        }
+    // Update spell/trap zones (combined)
+    updateSpellTrapZone('player1SpellTrapZone', player1);
+    updateSpellTrapZone('player2SpellTrapZone', player2);
         
         // Update graveyards
         updateGraveyard('player1Graveyard', player1);
@@ -229,9 +243,9 @@ function updateMonsterField(fieldId, player) {
         slots.innerHTML = '';
     }
     
-    // Detect mobile - show 3 slots on mobile, 5 on desktop
+    // Detect mobile - show 3 slots on mobile, 4 on desktop
     const isMobile = window.innerWidth <= 768;
-    const maxVisibleSlots = isMobile ? 3 : 5;
+    const maxVisibleSlots = isMobile ? 3 : 4;
     
     // Update field label
     const labelId = fieldId === 'player1MonsterField' ? 'player1MonsterFieldLabel' : 'player2MonsterFieldLabel';
@@ -240,8 +254,8 @@ function updateMonsterField(fieldId, player) {
         label.textContent = `Monster Field (${maxVisibleSlots} slots${isMobile ? ' visible' : ''})`;
     }
     
-    // Always iterate through all 5 slots (game logic uses 5), but hide slots 4-5 on mobile
-    for (let i = 0; i < 5; i++) {
+    // Always iterate through all 4 slots
+    for (let i = 0; i < 4; i++) {
         const slot = document.createElement('div');
         slot.className = 'monster-card empty';
         slot.dataset.slotIndex = i;
@@ -313,8 +327,8 @@ function updateMonsterField(fieldId, player) {
             }
         }
         
-        // On mobile, hide slots beyond index 2 (slots 4 and 5) visually
-        // Note: Game logic still uses 5 slots, but mobile UI only shows 3
+        // On mobile, hide slot 4 (index 3) visually
+        // Note: Game logic uses 4 slots, but mobile UI only shows 3
         if (isMobile && i >= 3) {
             const elementToHide = monster && monster.isAlive() ? slots.lastElementChild : slot;
             if (elementToHide) {
@@ -388,33 +402,86 @@ function updateHand(handId, player) {
     }
 }
 
-function updateSpellZone(zoneId, player) {
-    const zone = document.getElementById(zoneId);
-    const label = zone.querySelector('.zone-label');
-    zone.innerHTML = '';
-    zone.appendChild(label);
-    
-    player.spellZone.forEach(spell => {
-        const spellElement = spell.createElement();
-        zone.appendChild(spellElement);
-    });
-}
-
-function updateTrapZone(zoneId, player) {
+function updateSpellTrapZone(zoneId, player) {
     const zone = document.getElementById(zoneId);
     if (!zone) return;
     const label = zone.querySelector('.zone-label');
     zone.innerHTML = '';
     zone.appendChild(label);
     
-    // Show only 5 trap slots
+    // Show all 5 spell/trap slots
     for (let i = 0; i < 5; i++) {
-        const trap = player.trapZone[i];
-        if (trap) {
-            const trapElement = trap.createElement();
-            trapElement.dataset.trapIndex = i;
-            zone.appendChild(trapElement);
+        const card = player.spellTrapZone[i];
+        if (card) {
+            const cardElement = card.createElement();
+            cardElement.dataset.zoneIndex = i;
+            zone.appendChild(cardElement);
+        } else {
+            // Show empty slot
+            const emptySlot = document.createElement('div');
+            emptySlot.className = 'spell-card empty-slot';
+            emptySlot.dataset.zoneIndex = i;
+            emptySlot.textContent = `Slot ${i + 1}`;
+            emptySlot.style.opacity = '0.3';
+            emptySlot.style.cursor = 'pointer';
+            if (player.id === game.getCurrentPlayer().id) {
+                emptySlot.addEventListener('click', () => {
+                    if (selectedCard && (selectedCard.type === 'spell' || selectedCard.type === 'trap')) {
+                        handleSpellTrapSlotClick(player, i);
+                    }
+                });
+            }
+            zone.appendChild(emptySlot);
         }
+    }
+}
+
+function handleSpellTrapSlotClick(player, slotIndex) {
+    if (player.id !== game.getCurrentPlayer().id) return;
+    if (!selectedCard || (selectedCard.type !== 'spell' && selectedCard.type !== 'trap')) return;
+    
+    // Check if spell needs a target first
+    if (selectedCard.type === 'spell' && (selectedCard.id === 'lightning_bolt' || selectedCard.id === 'heal' || selectedCard.id === 'vitality_surge')) {
+        if (!window.spellTargetMode) {
+            game.log(`Select a target monster to use ${selectedCard.name}`);
+            window.spellTargetMode = true;
+            return;
+        }
+    }
+    
+    let result;
+    if (selectedCard.type === 'spell') {
+        result = player.playSpell(selectedCard, slotIndex);
+        if (result.success && result.spell) {
+            // Execute spell immediately
+            const spellResult = result.spell.execute(game, player, window.spellTarget ? window.spellTarget : null);
+            if (!spellResult.success) {
+                // Refund if spell failed
+                player.stars += selectedCard.cost;
+                player.spellTrapZone[slotIndex] = null;
+                player.hand.push(selectedCard);
+            } else {
+                // Remove from zone after execution (spells are one-time use)
+                player.spellTrapZone[slotIndex] = null;
+            }
+            window.spellTargetMode = false;
+            window.spellTarget = null;
+        }
+    } else {
+        result = player.playTrap(selectedCard, slotIndex);
+    }
+    
+    if (result.success) {
+        game.log(`${player.name} plays ${selectedCard.name}!`);
+        const cardElement = document.querySelector(`[data-card-id="${selectedCard.id}"].selected`);
+        if (cardElement) {
+            animateCardPlay(cardElement);
+        }
+        selectedCard = null;
+        updateUI();
+    } else {
+        game.log(result.message);
+        updateUI();
     }
 }
 
@@ -424,6 +491,53 @@ function updateGraveyard(graveyardId, player) {
     const count = player.graveyard.length;
     label.textContent = `Graveyard (${count})`;
 }
+
+// Store AI avatar selection so it stays consistent
+let aiAvatarSelected = null;
+
+function updateCharacterIcon(iconId, player) {
+    const iconContainer = document.getElementById(iconId);
+    if (!iconContainer) return;
+    
+    const img = iconContainer.querySelector('img');
+    const placeholder = iconContainer.querySelector('.character-icon-placeholder');
+    
+    // Determine which image to use based on player type
+    let imagePath;
+    if (player.name === 'AI Opponent') {
+        // Randomly select AI avatar (main2.png or girl1.png) and keep it consistent
+        if (!aiAvatarSelected) {
+            const aiAvatars = ['main2.png', 'girl1.png'];
+            aiAvatarSelected = aiAvatars[Math.floor(Math.random() * aiAvatars.length)];
+        }
+        imagePath = `assets/images/avatar/${aiAvatarSelected}`;
+    } else {
+        // Player always uses main.png
+        imagePath = 'assets/images/avatar/main.png';
+    }
+    
+    if (img) {
+        img.src = imagePath;
+        img.alt = player.name;
+        // Show placeholder if image fails to load
+        img.onerror = function() {
+            this.style.display = 'none';
+            if (placeholder) {
+                placeholder.style.display = 'block';
+                // Use robot emoji for AI, person for players
+                placeholder.textContent = player.name === 'AI Opponent' ? '🤖' : '👤';
+            }
+        };
+        img.onload = function() {
+            this.style.display = 'block';
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+        };
+    }
+    
+}
+
 
 function updateBattleLog() {
     const logContent = document.getElementById('logContent');
@@ -458,56 +572,28 @@ function handleCardClick(card, player, event) {
             // Show message to select a slot
             game.log(`Select an empty monster slot to play ${card.name}`);
         } else if (card.type === 'spell') {
-            // Play spell immediately (unless it needs a target)
+            // Play spell - some go to zone, some execute immediately
             if (player.canPlayCard(card)) {
-                // Check if spell needs a target (like lightning bolt)
-                if (card.id === 'lightning_bolt' || card.id === 'heal') {
+                // Check if spell needs a target (like lightning bolt, heal)
+                if (card.id === 'lightning_bolt' || card.id === 'heal' || card.id === 'vitality_surge') {
                     game.log(`Select a target monster to use ${card.name}`);
                     selectedCard = card;
                     // Store that we're selecting a target
                     window.spellTargetMode = true;
                 } else {
-                    const result = player.playSpell(card);
-                    if (result.success) {
-                        const spellResult = result.spell.execute(game, player);
-                        if (spellResult.success) {
-                            game.log(`${player.name} plays ${card.name}!`);
-                            // Animate spell play
-                            animateCardPlay(cardElement);
-                        } else {
-                            // Refund if spell failed
-                            player.stars += card.cost;
-                            player.hand.push(card);
-                        }
-                        updateUI();
-                    } else {
-                        game.log(result.message);
-                        updateUI();
-                    }
+                    // Spells that go to the zone (like traps) - need to select slot
+                    game.log(`Select an empty spell/trap slot to place ${card.name}`);
+                    selectedCard = card;
                 }
             } else {
                 game.log('Not enough Stars to play this card!');
                 updateUI();
             }
         } else if (card.type === 'trap') {
-            // Traps need to be placed in trap zone
+            // Traps go in spell/trap zone
             if (player.canPlayCard(card)) {
-                // Find empty trap slot
-                const emptySlot = player.trapZone.findIndex(trap => trap === null);
-                if (emptySlot !== -1) {
-                    const result = player.playTrap(card, emptySlot);
-                    if (result.success) {
-                        game.log(`${player.name} sets ${card.name} in trap zone!`);
-                        animateCardPlay(cardElement);
-                        updateUI();
-                    } else {
-                        game.log(result.message);
-                        updateUI();
-                    }
-                } else {
-                    game.log('Trap zone is full!');
-                    updateUI();
-                }
+                game.log(`Select an empty spell/trap slot to place ${card.name}`);
+                selectedCard = card;
             } else {
                 game.log('Not enough Stars to play this card!');
                 updateUI();
@@ -520,7 +606,7 @@ function handleEmptySlotClick(player, slotIndex) {
     if (player.id !== game.getCurrentPlayer().id) return;
     if (!selectedCard || selectedCard.type !== 'monster') return;
     
-    // On mobile, prevent placing monsters in slots 4-5 (index 3-4)
+    // On mobile, prevent placing monsters in slot 4 (index 3)
     const isMobile = window.innerWidth <= 768;
     if (isMobile && slotIndex >= 3) {
         game.log('On mobile, only the first 3 monster slots are available. Please use slots 1-3.');
@@ -650,16 +736,23 @@ function handleAttackerSelection(player, slotIndex) {
 
 function showMonsterUpgradeOptions(player, slotIndex, monster) {
     const upgradeOptions = document.getElementById('upgradeOptions');
+    const attackUpgradesLeft = player.maxAttackUpgrades - player.attackUpgradesThisTurn;
+    const defenseUpgradesLeft = player.maxDefenseUpgrades - player.defenseUpgradesThisTurn;
+    const canUpgradeAttack = attackUpgradesLeft > 0 && player.stars >= 2;
+    const canUpgradeDefense = defenseUpgradesLeft > 0 && player.stars >= 2;
+    
     upgradeOptions.innerHTML = `
         <div style="margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px;">
             <div style="font-weight: bold; margin-bottom: 10px;">Upgrade ${monster.name}:</div>
             <button class="btn btn-secondary" style="width: 100%; margin-bottom: 5px;" 
-                    onclick="upgradeMonsterWeapon(${slotIndex})">
-                Upgrade Weapon (2⭐)
+                    onclick="upgradeMonsterWeapon(${slotIndex})"
+                    ${!canUpgradeAttack ? 'disabled' : ''}>
+                Upgrade Weapon (2⭐) ${attackUpgradesLeft > 0 ? `(${attackUpgradesLeft} left)` : '(Limit reached)'}
             </button>
             <button class="btn btn-secondary" style="width: 100%;" 
-                    onclick="upgradeMonsterArmor(${slotIndex})">
-                Upgrade Armor (2⭐)
+                    onclick="upgradeMonsterArmor(${slotIndex})"
+                    ${!canUpgradeDefense ? 'disabled' : ''}>
+                Upgrade Armor (2⭐) ${defenseUpgradesLeft > 0 ? `(${defenseUpgradesLeft} left)` : '(Limit reached)'}
             </button>
         </div>
     `;
@@ -667,9 +760,14 @@ function showMonsterUpgradeOptions(player, slotIndex, monster) {
 
 function upgradeMonsterWeapon(slotIndex) {
     const player = game.getCurrentPlayer();
+    const monster = player.monsterField[slotIndex];
+    if (!monster) return;
+    
     const result = player.upgradeMonsterWeapon(slotIndex);
     if (result.success) {
-        game.log(`${player.name} upgrades ${player.monsterField[slotIndex].name}'s weapon!`);
+        game.log(`${player.name} upgrades ${monster.name}'s weapon!`);
+        // Refresh upgrade options to show updated limits
+        showMonsterUpgradeOptions(player, slotIndex, monster);
     } else {
         game.log(result.message);
     }
@@ -678,9 +776,14 @@ function upgradeMonsterWeapon(slotIndex) {
 
 function upgradeMonsterArmor(slotIndex) {
     const player = game.getCurrentPlayer();
+    const monster = player.monsterField[slotIndex];
+    if (!monster) return;
+    
     const result = player.upgradeMonsterArmor(slotIndex);
     if (result.success) {
-        game.log(`${player.name} upgrades ${player.monsterField[slotIndex].name}'s armor!`);
+        game.log(`${player.name} upgrades ${monster.name}'s armor!`);
+        // Refresh upgrade options to show updated limits
+        showMonsterUpgradeOptions(player, slotIndex, monster);
     } else {
         game.log(result.message);
     }
@@ -788,8 +891,13 @@ function showBattleIntro(aiEnabled) {
     if (!introModal) {
         // If modal doesn't exist, just start the game
         initializeGame(aiEnabled);
-        if (musicPlayer) {
-            musicPlayer.play();
+        if (musicPlayer && typeof musicPlayer.play === 'function') {
+            const playPromise = musicPlayer.play();
+            if (playPromise && typeof playPromise.catch === 'function') {
+                playPromise.catch(error => {
+                    console.warn('[MUSIC] Autoplay prevented:', error);
+                });
+            }
         }
         return;
     }
@@ -807,6 +915,7 @@ function showBattleIntro(aiEnabled) {
         // Reset animations
         const title = introModal.querySelector('.battle-intro-title');
         const subtitle = introModal.querySelector('.battle-intro-subtitle');
+        const narrator = introModal.querySelector('.battle-intro-narrator');
         const commence = introModal.querySelector('.battle-intro-commence');
         
         if (title) {
@@ -827,16 +936,27 @@ function showBattleIntro(aiEnabled) {
             }, 10);
         }
         
+        // Show narrator text (matches the voice)
+        if (narrator) {
+            narrator.textContent = 'Let the battle commence!';
+            narrator.style.animation = 'none';
+            narrator.style.opacity = '0';
+            narrator.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                narrator.style.animation = 'narratorFadeIn 0.6s ease-out 1s forwards, narratorFadeOut 0.6s ease-out 2.5s forwards';
+            }, 10);
+        }
+        
         if (commence) {
             commence.style.animation = 'none';
             commence.style.opacity = '0';
             commence.style.transform = 'translateY(20px)';
             setTimeout(() => {
-                commence.style.animation = 'commenceFadeIn 0.8s ease-out 1.5s forwards';
+                commence.style.animation = 'commenceFadeIn 0.8s ease-out 2.8s forwards';
             }, 10);
         }
 
-        // After animations complete (about 3.5 seconds), fade out intro and start music
+        // After animations complete (about 4 seconds), fade out intro and start music
         setTimeout(() => {
             // Fade out the intro overlay
             introModal.style.transition = 'opacity 0.5s ease-out';
@@ -848,13 +968,16 @@ function showBattleIntro(aiEnabled) {
             }, 500);
             
             // Auto-start music when battle begins
-            if (musicPlayer) {
-                musicPlayer.play().catch(error => {
-                    console.warn('[MUSIC] Autoplay prevented, user needs to interact first:', error);
-                    // Music will start when user clicks play button
-                });
+            if (musicPlayer && typeof musicPlayer.play === 'function') {
+                const playPromise = musicPlayer.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(error => {
+                        console.warn('[MUSIC] Autoplay prevented, user needs to interact first:', error);
+                        // Music will start when user clicks play button
+                    });
+                }
             }
-        }, 3500); // Total animation time: 0.8s title + 0.5s delay + 2.5s subtitle + 0.8s commence = ~3.5s
+        }, 4000); // Total animation time: 0.8s title + 0.5s delay + 2.5s subtitle + 0.3s gap + 0.6s narrator + 0.8s commence = ~4s
     }, 100); // Small delay to ensure game is rendered
 }
 

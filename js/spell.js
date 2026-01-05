@@ -140,6 +140,19 @@ class Spell {
                 game.log(`${player.name}'s ${this.name} increases fort defense by 3!`);
                 return { success: true, message: 'Fort defense increased' };
                 
+            case 'grant_extra_upgrades':
+                // Grant extra upgrade opportunities
+                const upgradeType = this.data.upgradeType || 'both'; // 'attack', 'defense', or 'both'
+                player.grantExtraUpgrade(upgradeType);
+                if (upgradeType === 'both') {
+                    game.log(`${player.name}'s ${this.name} grants +1 attack and +1 defense upgrade this turn!`);
+                } else if (upgradeType === 'attack') {
+                    game.log(`${player.name}'s ${this.name} grants +1 attack upgrade this turn!`);
+                } else {
+                    game.log(`${player.name}'s ${this.name} grants +1 defense upgrade this turn!`);
+                }
+                return { success: true, message: 'Extra upgrades granted' };
+                
             default:
                 return { success: false, message: 'Unknown spell effect' };
         }

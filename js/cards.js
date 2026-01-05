@@ -306,6 +306,15 @@ const CARD_DATABASE = {
         description: 'All monsters gain +5 Health permanently.',
         effect: 'permanent_health_boost'
     },
+    upgrade_mastery: {
+        id: 'upgrade_mastery',
+        name: 'Upgrade Mastery',
+        type: 'spell',
+        cost: 3,
+        description: 'Gain +1 attack and +1 defense upgrade this turn.',
+        effect: 'grant_extra_upgrades',
+        upgradeType: 'both'
+    },
     
     // Traps (Like Yu-Gi-Oh but different)
     mirror_force: {
