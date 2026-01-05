@@ -435,21 +435,35 @@ function updateSpellTrapZone(zoneId, player) {
     zone.innerHTML = '';
     zone.appendChild(label);
     
-    // Show all 5 spell/trap slots
+    // Detect mobile - show 3 slots on mobile, 5 on desktop
+    const isMobile = window.innerWidth <= 768;
+    const maxVisibleSlots = isMobile ? 3 : 5;
+    
+    // Always iterate through all 5 slots internally (game logic uses 5)
     for (let i = 0; i < 5; i++) {
         const card = player.spellTrapZone[i];
         if (card) {
             const cardElement = card.createElement();
             cardElement.dataset.zoneIndex = i;
+            // Hide slots beyond visible limit on mobile
+            if (isMobile && i >= maxVisibleSlots) {
+                cardElement.style.display = 'none';
+            }
             zone.appendChild(cardElement);
         } else {
             // Show empty slot
             const emptySlot = document.createElement('div');
-            emptySlot.className = 'spell-card empty-slot';
+            emptySlot.className = 'spell-card empty-spell-trap-slot';
             emptySlot.dataset.zoneIndex = i;
             emptySlot.textContent = `Slot ${i + 1}`;
             emptySlot.style.opacity = '0.3';
             emptySlot.style.cursor = 'pointer';
+            
+            // Hide slots beyond visible limit on mobile
+            if (isMobile && i >= maxVisibleSlots) {
+                emptySlot.style.display = 'none';
+            }
+            
             if (player.id === game.getCurrentPlayer().id) {
                 emptySlot.addEventListener('click', () => {
                     if (selectedCard && (selectedCard.type === 'spell' || selectedCard.type === 'trap')) {

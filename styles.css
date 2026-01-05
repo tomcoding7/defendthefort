@@ -1428,13 +1428,24 @@ body {
         min-height: 60px;
         padding: 5px;
         gap: 4px;
+        /* Limit to 3 slots on mobile */
+        max-width: 100%;
+        overflow-x: auto;
     }
     
     .spell-card, .empty-spell-trap-slot {
         min-width: 50px;
+        max-width: 80px;
         min-height: 60px;
         font-size: 0.7em;
         padding: 5px;
+        flex-shrink: 0; /* Don't shrink cards */
+    }
+    
+    /* Hide slots 4 and 5 on mobile (they're still in game logic, just not visible) */
+    /* Note: First child is the label, so slots start from 2nd child */
+    .spell-trap-zone > *:nth-child(n+6) {
+        display: none !important; /* Hide slots 4 and 5 (after label + 3 visible slots) */
     }
     
     .graveyard {
