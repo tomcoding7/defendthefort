@@ -11,29 +11,10 @@
 <body>
     <div class="game-container">
         <header class="game-header">
-            <h1>🛡️ Defend the Fort</h1>
             <div class="game-info">
                 <div class="turn-indicator" id="turnIndicator">Player 1's Turn</div>
                 <div class="turn-counter">Turn: <span id="turnNumber">1</span></div>
-            </div>
-            <div class="music-controls" id="musicControls">
-                <div class="music-info">
-                    <span id="currentTrackName">Game Music 1</span>
-                </div>
-                <div class="music-buttons">
-                    <button class="music-btn" id="musicPrev">⏮️</button>
-                    <button class="music-btn" id="musicPlayPause">▶️</button>
-                    <button class="music-btn" id="musicNext">⏭️</button>
-                </div>
-                <div class="music-volume-control">
-                    <span>🔊</span>
-                    <input type="range" id="musicVolume" min="0" max="100" value="50" class="volume-slider">
-                </div>
-                <select id="musicTrackSelect" class="music-select">
-                    <option value="0">Game Music 1</option>
-                    <option value="1">Battle Music</option>
-                    <option value="2">Boss Battle</option>
-                </select>
+                <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
             </div>
         </header>
 
@@ -128,6 +109,36 @@
                 <button class="btn btn-primary" id="endTurnBtn">End Turn</button>
                 <button class="btn btn-secondary" id="upgradeFortBtn">Upgrade Fort (5⭐)</button>
                 <div class="upgrade-options" id="upgradeOptions"></div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settingsModal">
+            <div class="modal-content settings-modal">
+                <span class="close" id="closeSettings">&times;</span>
+                <h2>⚙️ Settings</h2>
+                <div class="settings-section">
+                    <h3>🎵 Music Controls</h3>
+                    <div class="music-controls" id="musicControls">
+                        <div class="music-info">
+                            <span id="currentTrackName">Game Music 1</span>
+                        </div>
+                        <div class="music-buttons">
+                            <button class="music-btn" id="musicPrev">⏮️</button>
+                            <button class="music-btn" id="musicPlayPause">▶️</button>
+                            <button class="music-btn" id="musicNext">⏭️</button>
+                        </div>
+                        <div class="music-volume-control">
+                            <span>🔊</span>
+                            <input type="range" id="musicVolume" min="0" max="100" value="50" class="volume-slider">
+                        </div>
+                        <select id="musicTrackSelect" class="music-select">
+                            <option value="0">Game Music 1</option>
+                            <option value="1">Battle Music</option>
+                            <option value="2">Boss Battle</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 

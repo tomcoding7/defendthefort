@@ -4,6 +4,11 @@
     box-sizing: border-box;
 }
 
+/* Desktop: allow scrolling but optimize for one screen */
+html, body {
+    height: 100%;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
@@ -18,28 +23,49 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .game-header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     background: rgba(0, 0, 0, 0.3);
-    padding: 15px;
+    padding: 10px;
     border-radius: 10px;
     backdrop-filter: blur(10px);
-}
-
-.game-header h1 {
-    font-size: 2.5em;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    margin-bottom: 10px;
+    flex-shrink: 0; /* Don't shrink header */
 }
 
 .game-info {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 30px;
     font-size: 1.2em;
+}
+
+.settings-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 1.2em;
+    transition: all 0.3s;
+    color: #fff;
+    touch-action: manipulation;
+}
+
+.settings-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.settings-btn:active {
+    transform: scale(0.95);
 }
 
 .turn-indicator {
@@ -55,6 +81,7 @@ body {
     margin: 10px 0;
     backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0; /* Don't shrink player areas */
 }
 
 /* Opponent area - no rotation so monster fields face each other */
@@ -324,8 +351,9 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 20px 0;
-    gap: 10px;
+    margin: 10px 0;
+    gap: 5px;
+    flex-shrink: 0; /* Don't shrink center area */
 }
 
 .battle-log-toggle {
@@ -403,6 +431,8 @@ body {
     padding: 20px;
     border-radius: 15px;
     backdrop-filter: blur(10px);
+    flex-shrink: 0; /* Don't shrink bottom panel */
+    overflow: hidden; /* Prevent overflow */
 }
 
 .hand-container {
@@ -533,6 +563,11 @@ body {
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
 }
 
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(102, 126, 234, 0.3);
+}
+
 .btn-secondary {
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 }
@@ -540,6 +575,11 @@ body {
 .btn-secondary:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(240, 147, 251, 0.5);
+}
+
+.btn-secondary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(240, 147, 251, 0.3);
 }
 
 .btn:disabled {
@@ -558,24 +598,33 @@ body {
 .modal {
     display: none;
     position: fixed;
-    z-index: 1000;
+    z-index: 10000; /* Very high z-index to ensure visibility */
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
+    background-color: rgba(0, 0, 0, 0.85); /* Darker for better visibility */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Disable backdrop-filter on mobile for performance */
+@media (min-width: 769px) {
+    .modal {
+        backdrop-filter: blur(5px);
+    }
 }
 
 .modal-content {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    margin: 10% auto;
+    margin: 5% auto;
     padding: 30px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 15px;
-    width: 80%;
+    width: 90%;
     max-width: 500px;
     position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
 .win-modal {
@@ -877,6 +926,58 @@ body {
 
 /* Mobile adjustments for battle intro */
 @media (max-width: 768px) {
+    /* Modal optimizations for mobile */
+    .modal {
+        background-color: rgba(0, 0, 0, 0.9); /* Even darker on mobile */
+    }
+    
+    .modal-content {
+        margin: 10% auto;
+        padding: 25px 20px;
+        width: 95%;
+        max-width: none;
+        border-radius: 12px;
+    }
+    
+    .modal-content h2 {
+        font-size: 1.8em;
+        margin-bottom: 15px;
+    }
+    
+    .modal-content p {
+        font-size: 1em;
+        margin: 15px 0;
+    }
+    
+    .modal-content .btn {
+        font-size: 1.2em;
+        padding: 18px 20px;
+        min-height: 60px; /* Larger touch target */
+        margin-bottom: 15px;
+        border-radius: 10px;
+        font-weight: bold;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.3);
+        touch-action: manipulation;
+    }
+    
+    /* Ensure all buttons are touch-friendly on mobile */
+    .btn {
+        min-height: 48px;
+        padding: 12px 20px;
+        font-size: 1em;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Disable hover effects on mobile (they can stick) */
+    .btn:hover {
+        transform: none;
+    }
+    
+    .hand-card:hover {
+        transform: none;
+    }
+    
     .battle-intro-title {
         font-size: 2.5em;
         letter-spacing: 4px;
@@ -968,16 +1069,29 @@ body {
 }
 
 /* Music Player Controls */
+.settings-modal {
+    max-width: 500px;
+}
+
+.settings-section {
+    margin: 20px 0;
+}
+
+.settings-section h3 {
+    margin-bottom: 15px;
+    color: #ffd700;
+    font-size: 1.2em;
+}
+
 .music-controls {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 15px;
-    margin-top: 15px;
-    padding: 10px;
+    padding: 15px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
-    flex-wrap: wrap;
 }
 
 .music-info {
@@ -1062,8 +1176,49 @@ body {
 }
 
 /* Mobile Responsive Styles */
+/* Desktop: allow scrolling */
+@media (min-width: 769px) {
+    html, body {
+        overflow-y: auto;
+        position: relative;
+    }
+    
+    .game-container {
+        overflow: visible;
+    }
+}
+
+/* Mobile devices (Android/iOS) - no scrolling, fixed viewport */
 @media (max-width: 768px) {
-    /* Prevent text selection on touch devices for better UX */
+    /* Only apply fixed viewport on actual touch devices */
+    @media (hover: none) and (pointer: coarse) {
+        html, body {
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height for mobile */
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+        
+        .game-container {
+            height: 100vh;
+            height: 100dvh;
+            padding: 5px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            will-change: auto;
+        }
+    }
+    
+    /* Mobile optimizations that apply to all mobile */
+    .game-container {
+        padding: 5px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Performance optimizations for mobile */
     * {
         -webkit-tap-highlight-color: transparent;
         -webkit-touch-callout: none;
@@ -1071,6 +1226,19 @@ body {
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
+        /* Reduce animations on mobile for better performance */
+        animation-duration: 0.3s !important;
+        transition-duration: 0.2s !important;
+    }
+    
+    /* Optimize card rendering */
+    .hand-card {
+        will-change: auto;
+        transform: none; /* Disable transforms on mobile for performance */
+    }
+    
+    .monster-card {
+        will-change: auto;
     }
 
     /* Allow text selection in specific areas */
@@ -1081,18 +1249,23 @@ body {
         user-select: text;
     }
 
-    .game-container {
-        padding: 10px;
-    }
-
-    .game-header h1 {
-        font-size: 1.8em;
+    .game-header {
+        padding: 5px;
+        margin-bottom: 3px;
     }
 
     .game-info {
-        flex-direction: column;
+        flex-direction: row;
         gap: 10px;
+        font-size: 0.85em;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    /* Settings button on mobile */
+    .settings-btn {
         font-size: 1em;
+        padding: 6px 10px;
     }
 
     .music-controls {
@@ -1173,15 +1346,29 @@ body {
     }
 
     .player-area {
-        padding: 15px;
-        margin: 8px 0;
+        padding: 8px;
+        margin: 3px 0;
     }
 
     .player-header {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-        padding: 12px;
+        flex-direction: row;
+        gap: 8px;
+        text-align: left;
+        padding: 8px;
+        margin-bottom: 5px;
+    }
+    
+    .player-name {
+        font-size: 0.9em;
+    }
+    
+    .player-stats {
+        font-size: 0.8em;
+        gap: 8px;
+    }
+    
+    .stat {
+        font-size: 0.85em;
     }
 
     .player-info {
@@ -1195,18 +1382,19 @@ body {
     }
 
     .player-area.player-area .character-icon {
-        bottom: 5px;
-        right: 5px;
-        width: 100px;
-        height: 100px;
+        bottom: 2px;
+        right: 2px;
+        width: 60px;
+        height: 60px;
+        border-width: 2px;
     }
 
     .opponent-area .character-icon {
-        top: 5px;
-        left: 5px;
-        width: 100px;
-        height: 100px;
-        height: 120px;
+        top: 2px;
+        left: 2px;
+        width: 60px;
+        height: 60px;
+        border-width: 2px;
     }
 
     .player-stats {
@@ -1221,13 +1409,38 @@ body {
 
     .game-center {
         flex-direction: column;
-        gap: 10px;
-        margin: 10px 0;
+        gap: 3px;
+        margin: 3px 0;
+    }
+    
+    .battle-log-toggle {
+        padding: 5px 10px;
+        font-size: 0.75em;
     }
 
     .spell-trap-row {
-        flex-direction: column;
-        gap: 8px;
+        flex-direction: row;
+        gap: 5px;
+        margin: 5px 0;
+    }
+    
+    .spell-trap-zone {
+        min-height: 60px;
+        padding: 5px;
+        gap: 4px;
+    }
+    
+    .spell-card, .empty-spell-trap-slot {
+        min-width: 50px;
+        min-height: 60px;
+        font-size: 0.7em;
+        padding: 5px;
+    }
+    
+    .graveyard {
+        min-width: 60px;
+        min-height: 60px;
+        padding: 5px;
     }
 
     .spell-zone, .trap-zone {
@@ -1241,25 +1454,67 @@ body {
     }
 
     .battle-zone {
-        min-height: 150px;
-        padding: 12px;
+        min-height: 100px;
+        max-height: 120px;
+        padding: 8px;
     }
 
     .log-content {
-        max-height: 120px;
-        font-size: 0.85em;
+        max-height: 80px;
+        font-size: 0.75em;
+        overflow-y: auto;
     }
 
     .bottom-panel {
-        flex-direction: column;
-        padding: 15px;
-        gap: 15px;
+        flex-direction: row;
+        padding: 8px;
+        gap: 8px;
+        margin-top: 5px;
+        max-height: 35vh; /* Limit height */
+    }
+    
+    .hand-container {
+        flex: 1;
+        min-width: 0; /* Allow shrinking */
+    }
+    
+    .hand-label {
+        font-size: 0.85em;
+        margin-bottom: 5px;
     }
 
     .hand {
-        min-height: 140px;
-        padding: 12px;
-        gap: 8px;
+        min-height: 100px;
+        max-height: 120px;
+        padding: 5px;
+        gap: 5px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        flex-wrap: nowrap; /* Horizontal scroll on mobile */
+    }
+    
+    .hand-card {
+        min-width: 80px;
+        max-width: 80px;
+        padding: 8px;
+        font-size: 0.7em;
+        flex-shrink: 0; /* Don't shrink cards */
+    }
+    
+    .card-image {
+        max-height: 60px;
+    }
+    
+    .action-panel {
+        min-width: 120px;
+        flex-shrink: 0;
+    }
+    
+    .action-panel .btn {
+        font-size: 0.8em;
+        padding: 8px 12px;
+        min-height: 40px;
+        margin-bottom: 5px;
     }
 
     .hand-card {
@@ -1353,11 +1608,33 @@ body {
     }
 
     .monster-field {
-        padding: 8px;
+        padding: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .zone-label {
+        font-size: 0.75em;
+        margin-bottom: 3px;
     }
 
     .monster-slots {
-        gap: 6px;
+        gap: 4px;
+    }
+    
+    .monster-card {
+        min-height: 90px;
+        padding: 5px;
+        font-size: 0.75em;
+    }
+    
+    .monster-name {
+        font-size: 0.85em;
+        margin-bottom: 3px;
+    }
+    
+    .monster-stats {
+        font-size: 0.7em;
+        margin: 3px 0;
     }
 }
 

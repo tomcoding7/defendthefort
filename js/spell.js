@@ -14,6 +14,42 @@ class Spell {
         card.className = 'spell-card';
         card.dataset.spellId = this.id;
         
+        // Add spell image if available (using same logic as Card class)
+        const baseImagePath = `assets/images/cards/spells/${this.id}`;
+        const possibleImagePaths = [
+            `${baseImagePath}.png`,
+            `${baseImagePath.replace(/_/g, '')}.png`, // e.g., lightningbolt.png
+            `${baseImagePath.replace(/_/g, '-')}.png`, // e.g., lightning-bolt.png
+            `${baseImagePath.replace(/_/g, '')}.jpg`,
+            `${baseImagePath.replace(/_/g, '-')}.jpg`,
+            `${baseImagePath}.jpg`
+        ];
+        
+        const cardImage = document.createElement('img');
+        cardImage.className = 'card-image';
+        cardImage.alt = this.name;
+        cardImage.style.width = '100%';
+        cardImage.style.height = 'auto';
+        cardImage.style.maxHeight = '100px';
+        cardImage.style.objectFit = 'cover';
+        cardImage.style.borderRadius = '6px';
+        cardImage.style.marginBottom = '8px';
+        cardImage.style.display = 'block';
+        
+        let currentVariationIndex = 0;
+        const tryNextVariation = () => {
+            currentVariationIndex++;
+            if (currentVariationIndex < possibleImagePaths.length) {
+                cardImage.src = possibleImagePaths[currentVariationIndex];
+            } else {
+                // Hide image if all variations fail
+                cardImage.style.display = 'none';
+            }
+        };
+        
+        cardImage.onerror = tryNextVariation;
+        cardImage.src = possibleImagePaths[0];
+        
         const name = document.createElement('div');
         name.className = 'card-name';
         name.textContent = this.name;
@@ -24,6 +60,7 @@ class Spell {
         desc.style.fontSize = '0.85em';
         desc.style.marginTop = '5px';
         
+        card.appendChild(cardImage);
         card.appendChild(name);
         card.appendChild(desc);
         
@@ -58,13 +95,19 @@ class Spell {
                 return { success: false, message: 'No cards in hand to redraw' };
                 
             case 'temporary_attack_boost':
+                let tempBoostedCount = 0;
                 player.monsterField.forEach(monster => {
                     if (monster && monster.isAlive()) {
                         monster.temporaryAttackBoost += 2;
+                        tempBoostedCount++;
                     }
                 });
-                game.log(`${player.name}'s monsters gain +2 Attack this turn!`);
-                return { success: true, message: 'Attack boost applied' };
+                if (tempBoostedCount > 0) {
+                    game.log(`${player.name}'s ${this.name} gives all monsters +2 Attack this turn! (${tempBoostedCount} monsters boosted)`);
+                } else {
+                    game.log(`${player.name}'s ${this.name} has no effect - no monsters on the field!`);
+                }
+                return { success: true, message: 'Attack boost applied', boostedCount: tempBoostedCount };
                 
             case 'direct_fort_damage':
                 const opponent = game.getOpponent(player);

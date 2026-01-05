@@ -17,9 +17,45 @@ class Trap {
         card.dataset.trapId = this.id;
         card.title = this.name;
         
+        // Add trap image if available (using same logic as Card class)
+        const baseImagePath = `assets/images/cards/traps/${this.id}`;
+        const possibleImagePaths = [
+            `${baseImagePath}.png`,
+            `${baseImagePath.replace(/_/g, '')}.png`, // e.g., counterstrike.png
+            `${baseImagePath.replace(/_/g, '-')}.png`, // e.g., counter-strike.png
+            `${baseImagePath.replace(/_/g, '')}.jpg`,
+            `${baseImagePath.replace(/_/g, '-')}.jpg`,
+            `${baseImagePath}.jpg`
+        ];
+        
+        const cardImage = document.createElement('img');
+        cardImage.className = 'card-image';
+        cardImage.alt = this.name;
+        cardImage.style.width = '100%';
+        cardImage.style.height = 'auto';
+        cardImage.style.maxHeight = '100px';
+        cardImage.style.objectFit = 'cover';
+        cardImage.style.borderRadius = '6px';
+        cardImage.style.marginBottom = '8px';
+        cardImage.style.display = 'block';
+        
+        let currentVariationIndex = 0;
+        const tryNextVariation = () => {
+            currentVariationIndex++;
+            if (currentVariationIndex < possibleImagePaths.length) {
+                cardImage.src = possibleImagePaths[currentVariationIndex];
+            } else {
+                // Hide image if all variations fail
+                cardImage.style.display = 'none';
+            }
+        };
+        
+        cardImage.onerror = tryNextVariation;
+        cardImage.src = possibleImagePaths[0];
+        
         const name = document.createElement('div');
         name.className = 'card-name';
-        name.textContent = 'Trap';
+        name.textContent = this.name; // Show actual trap name instead of just "Trap"
         name.style.color = '#ffffff';
         name.style.textShadow = '1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.5)';
         name.style.opacity = '0.9';
@@ -35,6 +71,7 @@ class Trap {
         cost.style.color = '#ffd700';
         cost.textContent = `⭐${this.cost}`;
         
+        card.appendChild(cardImage);
         card.appendChild(name);
         card.appendChild(cost);
         
@@ -51,9 +88,26 @@ class Trap {
                 // Reflect 50% damage back to attacker
                 if (context.attacker && context.damage) {
                     const reflectedDamage = Math.floor(context.damage * 0.5);
-                    context.attacker.takeDamage(reflectedDamage);
-                    game.log(`💥 ${player.name}'s ${this.name} reflects ${reflectedDamage} damage!`);
-                    return { success: true, message: 'Damage reflected', damage: reflectedDamage };
+                    const actualReflected = context.attacker.takeDamage(reflectedDamage);
+                    game.log(`💥 ${player.name}'s ${this.name} reflects ${actualReflected} damage back to ${context.attacker.name}!`);
+                    
+                    // Check if attacker was killed
+                    if (!context.attacker.isAlive()) {
+                        const attackerPlayer = context.attackerPlayer;
+                        if (attackerPlayer) {
+                            const attackerSlot = attackerPlayer.monsterField.findIndex(m => m === context.attacker);
+                            if (attackerSlot !== -1) {
+                                attackerPlayer.graveyard.push(context.attacker);
+                                attackerPlayer.monsterField[attackerSlot] = null;
+                                game.log(`${context.attacker.name} is defeated by the reflected damage!`);
+                                if (window.animateMonsterDestroy) {
+                                    window.animateMonsterDestroy(attackerPlayer.id === 'player1' ? 'player1' : 'player2', attackerSlot);
+                                }
+                                game.checkWinCondition();
+                            }
+                        }
+                    }
+                    return { success: true, message: 'Damage reflected', damage: actualReflected };
                 }
                 break;
                 

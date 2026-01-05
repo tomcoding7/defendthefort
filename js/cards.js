@@ -3,6 +3,7 @@
 let imageMappingCache = null;
 
 // Build image mapping by trying to load images and detecting what exists
+// Optimized for mobile: runs asynchronously without blocking UI
 async function buildImageMapping() {
     if (imageMappingCache) return imageMappingCache;
     
@@ -14,43 +15,105 @@ async function buildImageMapping() {
         return name.toLowerCase().replace(/[^a-z0-9]/g, '');
     }
     
-    // For each card, try to find matching image files
-    for (const [cardId, cardData] of Object.entries(cardDatabase)) {
-        const type = cardData.type;
-        const basePath = `assets/images/cards/${type}s/`;
-        
-        // Generate possible filenames
-        const possibleNames = [
-            cardId, // Exact ID match
-            cardId.replace(/_/g, ''), // Without underscores
-            normalizeName(cardData.name), // From card name
-            cardData.name.toLowerCase().replace(/\s+/g, ''), // From card name (spaces removed)
-        ];
-        
-        // Try each variation
-        for (const name of possibleNames) {
-            const imagePath = `${basePath}${name}.png`;
-            // Check if image exists by trying to load it
-            const exists = await checkImageExists(imagePath);
-            if (exists) {
-                imageMappingCache[cardId] = imagePath;
-                break; // Found it, move to next card
+    // Use requestIdleCallback for better performance, fallback to setTimeout
+    const scheduleCheck = (callback) => {
+        if (window.requestIdleCallback) {
+            window.requestIdleCallback(callback, { timeout: 2000 });
+        } else {
+            setTimeout(callback, 0);
+        }
+    };
+    
+    // Process cards in batches to avoid blocking
+    const cardEntries = Object.entries(cardDatabase);
+    const batchSize = 5; // Process 5 cards at a time
+    let currentIndex = 0;
+    
+    return new Promise((resolve) => {
+        function processBatch() {
+            const endIndex = Math.min(currentIndex + batchSize, cardEntries.length);
+            
+            for (let i = currentIndex; i < endIndex; i++) {
+                const [cardId, cardData] = cardEntries[i];
+                const type = cardData.type;
+                const basePath = `assets/images/cards/${type}s/`;
+                
+                // Generate possible filenames
+                const possibleNames = [
+                    cardId, // Exact ID match
+                    cardId.replace(/_/g, ''), // Without underscores
+                    normalizeName(cardData.name), // From card name
+                    cardData.name.toLowerCase().replace(/\s+/g, ''), // From card name (spaces removed)
+                ];
+                
+                // Try first variation synchronously (most common case)
+                const firstPath = `${basePath}${possibleNames[0]}.png`;
+                checkImageExistsFast(firstPath).then(exists => {
+                    if (exists) {
+                        imageMappingCache[cardId] = firstPath;
+                    } else {
+                        // Try other variations asynchronously
+                        tryOtherVariations(cardId, basePath, possibleNames.slice(1));
+                    }
+                });
+            }
+            
+            currentIndex = endIndex;
+            
+            if (currentIndex < cardEntries.length) {
+                scheduleCheck(processBatch);
+            } else {
+                // Give a small delay for all checks to complete
+                setTimeout(() => resolve(imageMappingCache), 500);
             }
         }
-    }
-    
-    return imageMappingCache;
+        
+        function tryOtherVariations(cardId, basePath, variations) {
+            if (variations.length === 0) return;
+            
+            const path = `${basePath}${variations[0]}.png`;
+            checkImageExistsFast(path).then(exists => {
+                if (exists) {
+                    imageMappingCache[cardId] = path;
+                } else if (variations.length > 1) {
+                    tryOtherVariations(cardId, basePath, variations.slice(1));
+                }
+            });
+        }
+        
+        // Start processing
+        scheduleCheck(processBatch);
+    });
 }
 
-// Check if an image file exists
-function checkImageExists(url) {
+// Fast image check with shorter timeout for mobile
+function checkImageExistsFast(url) {
     return new Promise((resolve) => {
         const img = new Image();
-        img.onload = () => resolve(true);
-        img.onerror = () => resolve(false);
+        let resolved = false;
+        
+        img.onload = () => {
+            if (!resolved) {
+                resolved = true;
+                resolve(true);
+            }
+        };
+        
+        img.onerror = () => {
+            if (!resolved) {
+                resolved = true;
+                resolve(false);
+            }
+        };
+        
         img.src = url;
-        // Timeout after 1 second
-        setTimeout(() => resolve(false), 1000);
+        // Shorter timeout for mobile (300ms instead of 1000ms)
+        setTimeout(() => {
+            if (!resolved) {
+                resolved = true;
+                resolve(false);
+            }
+        }, 300);
     });
 }
 
@@ -77,6 +140,7 @@ class Card {
         // Use cached mapping if available, otherwise try variations
         if (imageMappingCache && imageMappingCache[this.id]) {
             cardImage.src = imageMappingCache[this.id];
+            cardImage.loading = 'lazy'; // Lazy load images for better mobile performance
         } else {
             // Fallback: try multiple filename variations
             const basePath = `assets/images/cards/${this.type}s/`;
@@ -87,26 +151,31 @@ class Card {
                 `${this.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.png`, // Normalized name
             ];
             
+            cardImage.loading = 'lazy'; // Lazy load images for better mobile performance
+            
             let currentVariationIndex = 0;
-            cardImage.onerror = function() {
-                // Try next variation
+            const tryNextVariation = () => {
                 currentVariationIndex++;
                 if (currentVariationIndex < imageVariations.length) {
-                    this.src = basePath + imageVariations[currentVariationIndex];
+                    cardImage.src = basePath + imageVariations[currentVariationIndex];
                 } else {
                     // Hide image if all variations fail (fallback to text-only)
-                    this.style.display = 'none';
+                    cardImage.style.display = 'none';
                 }
             };
+            
+            cardImage.onerror = tryNextVariation;
             
             // Start with first variation
             cardImage.src = basePath + imageVariations[0];
         }
         
-        // Hide image if it fails to load
-        cardImage.onerror = function() {
-            this.style.display = 'none';
+        // Final fallback: hide if image fails to load after all attempts
+        const finalOnError = () => {
+            cardImage.style.display = 'none';
         };
+        // Add as additional error handler
+        cardImage.addEventListener('error', finalOnError, { once: true });
         cardImage.style.width = '100%';
         cardImage.style.height = 'auto';
         cardImage.style.maxHeight = this.type === 'monster' ? '120px' : '100px';

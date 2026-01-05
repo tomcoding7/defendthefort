@@ -62,6 +62,11 @@ class Game {
         newCurrentPlayer.startTurn();
         this.log(`${newCurrentPlayer.name} starts their turn.`);
         
+        // Check for trap cards that trigger on turn start (like Last Stand)
+        this.checkTraps(newCurrentPlayer, 'turn_start', {
+            player: newCurrentPlayer
+        });
+        
         // Trigger AI turn if enabled
         if (this.aiEnabled && newCurrentPlayer.id === 'player2') {
             setTimeout(() => {
@@ -104,6 +109,16 @@ class Game {
             window.animateBattle(attackerPlayer.id === 'player1' ? 'player1' : 'player2', attackerSlot, 
                                 targetPlayer.id === 'player1' ? 'player1' : 'player2', targetSlot);
         }
+        
+        // Check for trap cards that trigger on attack (like Mirror Barrier)
+        // This checks the target player's traps before the attack
+        this.checkTraps(targetPlayer, 'attack', {
+            attacker: attacker,
+            target: target,
+            attackerPlayer: attackerPlayer,
+            targetPlayer: targetPlayer,
+            damage: attacker.attack
+        });
         
         // Attacker deals damage first
         const result = attacker.attackMonster(target);
@@ -195,6 +210,15 @@ class Game {
         
         if (result.success) {
             this.log(`${attackerPlayer.name}'s ${result.attacker} attacks ${targetPlayer.name}'s fort for ${result.damage} damage!`);
+            
+            // Check for trap cards that trigger on fort attack (like Ambush)
+            this.checkTraps(targetPlayer, 'fort_attack', {
+                targetPlayer: targetPlayer,
+                attackerPlayer: attackerPlayer,
+                attacker: attacker,
+                damage: result.damage
+            });
+            
             this.checkWinCondition();
         }
         
@@ -234,11 +258,18 @@ class Game {
         
         player.spellTrapZone.forEach((card, index) => {
             // Check if it's a trap (not a spell)
-            if (card && card.constructor.name === 'Trap' && !card.activated) {
+            // Traps can be Trap instances or Card instances that need to be converted
+            let trap = card;
+            if (card && card.type === 'trap' && card.constructor.name === 'Card') {
+                // Convert Card to Trap instance
+                trap = new Trap(card.data);
+            }
+            
+            if (trap && trap.constructor.name === 'Trap' && !trap.activated) {
                 // Check if this trap should trigger
-                if (card.checkTrigger(this, player, eventType, context)) {
+                if (trap.checkTrigger(this, player, eventType, context)) {
                     // Activate the trap
-                    const result = card.activate(this, player, context);
+                    const result = trap.activate(this, player, context);
                     if (result.success) {
                         // Remove trap from zone after activation (traps are one-time use)
                         player.spellTrapZone[index] = null;

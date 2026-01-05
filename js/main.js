@@ -47,6 +47,32 @@ function setupEventListeners() {
         document.getElementById('cardModal').style.display = 'none';
     });
 
+    // Settings button
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsModal = document.getElementById('settingsModal');
+    const closeSettings = document.getElementById('closeSettings');
+    
+    if (settingsBtn && settingsModal) {
+        settingsBtn.addEventListener('click', () => {
+            settingsModal.style.display = 'block';
+        });
+    }
+    
+    if (closeSettings && settingsModal) {
+        closeSettings.addEventListener('click', () => {
+            settingsModal.style.display = 'none';
+        });
+    }
+    
+    // Click outside settings modal to close
+    if (settingsModal) {
+        window.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                settingsModal.style.display = 'none';
+            }
+        });
+    }
+
     // New game button
     document.getElementById('newGameBtn').addEventListener('click', () => {
         document.getElementById('winModal').style.display = 'none';
@@ -453,6 +479,9 @@ function handleSpellTrapSlotClick(player, slotIndex) {
     if (selectedCard.type === 'spell') {
         result = player.playSpell(selectedCard, slotIndex);
         if (result.success && result.spell) {
+            // Trigger trap checks for opponent (like Star Drain)
+            game.triggerCardPlayTrap(player, selectedCard);
+            
             // Execute spell immediately
             const spellResult = result.spell.execute(game, player, window.spellTarget ? window.spellTarget : null);
             if (!spellResult.success) {
@@ -461,11 +490,20 @@ function handleSpellTrapSlotClick(player, slotIndex) {
                 player.spellTrapZone[slotIndex] = null;
                 player.hand.push(selectedCard);
             } else {
-                // Remove from zone after execution (spells are one-time use)
-                player.spellTrapZone[slotIndex] = null;
+                // Check if spell is continuous (stays on field)
+                const isContinuous = isContinuousSpell(selectedCard);
+                if (!isContinuous) {
+                    // Send to graveyard after execution (non-continuous spells)
+                    player.graveyard.push(selectedCard);
+                    player.spellTrapZone[slotIndex] = null;
+                }
+                // Continuous spells stay in the zone
             }
             window.spellTargetMode = false;
             window.spellTarget = null;
+            
+            // Force UI update to show spell effects (especially for attack boosts)
+            updateUI();
         }
     } else {
         result = player.playTrap(selectedCard, slotIndex);
@@ -473,11 +511,18 @@ function handleSpellTrapSlotClick(player, slotIndex) {
     
     if (result.success) {
         game.log(`${player.name} plays ${selectedCard.name}!`);
+        
+        // Trigger trap checks for opponent when playing cards
+        if (selectedCard.type === 'monster' || selectedCard.type === 'trap') {
+            game.triggerCardPlayTrap(player, selectedCard);
+        }
+        
         const cardElement = document.querySelector(`[data-card-id="${selectedCard.id}"].selected`);
         if (cardElement) {
             animateCardPlay(cardElement);
         }
         selectedCard = null;
+        // Update UI again to ensure all changes are reflected
         updateUI();
     } else {
         game.log(result.message);
@@ -485,11 +530,96 @@ function handleSpellTrapSlotClick(player, slotIndex) {
     }
 }
 
+// Check if a spell is continuous (stays on field)
+function isContinuousSpell(card) {
+    if (card.type !== 'spell') return false;
+    
+    // Continuous spells have permanent or field effects
+    const continuousEffects = [
+        'permanent_attack_boost',
+        'permanent_health_boost',
+        'grant_extra_upgrades'
+    ];
+    
+    return continuousEffects.includes(card.data.effect);
+}
+
+// Store graveyard click handlers to prevent duplicates
+const graveyardHandlers = new Map();
+
 function updateGraveyard(graveyardId, player) {
     const graveyard = document.getElementById(graveyardId);
+    if (!graveyard) return;
+    
     const label = graveyard.querySelector('.zone-label');
     const count = player.graveyard.length;
     label.textContent = `Graveyard (${count})`;
+    
+    // Remove existing handler if any
+    if (graveyardHandlers.has(graveyardId)) {
+        const oldHandler = graveyardHandlers.get(graveyardId);
+        graveyard.removeEventListener('click', oldHandler);
+    }
+    
+    // Make graveyard clickable
+    graveyard.style.cursor = count > 0 ? 'pointer' : 'default';
+    graveyard.style.transition = 'all 0.3s';
+    
+    if (count > 0) {
+        const clickHandler = () => {
+            showGraveyardModal(player);
+        };
+        graveyard.addEventListener('click', clickHandler);
+        graveyardHandlers.set(graveyardId, clickHandler);
+        
+        // Add hover effect
+        graveyard.addEventListener('mouseenter', () => {
+            graveyard.style.background = 'rgba(139, 0, 0, 0.6)';
+            graveyard.style.transform = 'scale(1.05)';
+        });
+        
+        graveyard.addEventListener('mouseleave', () => {
+            graveyard.style.background = '';
+            graveyard.style.transform = '';
+        });
+    }
+}
+
+function showGraveyardModal(player) {
+    const modal = document.getElementById('cardModal');
+    const modalContent = document.getElementById('modalCardDetails');
+    
+    if (!modal || !modalContent) return;
+    
+    if (player.graveyard.length === 0) {
+        modalContent.innerHTML = `
+            <h3>${player.name}'s Graveyard</h3>
+            <p style="text-align: center; padding: 20px; color: #888;">Graveyard is empty</p>
+        `;
+    } else {
+        let html = `<h3>${player.name}'s Graveyard (${player.graveyard.length} cards)</h3>`;
+        html += '<div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">';
+        
+        player.graveyard.forEach((card, index) => {
+            // Try to get card image
+            const cardImage = card.createElement ? card.createElement().querySelector('img') : null;
+            const imageSrc = cardImage ? cardImage.src : '';
+            
+            html += `
+                <div style="background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 8px; border: 2px solid rgba(255, 255, 255, 0.2); min-width: 150px; max-width: 200px;">
+                    ${imageSrc ? `<img src="${imageSrc}" style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;" onerror="this.style.display='none';">` : ''}
+                    <div style="font-weight: bold; color: #ffd700; margin-bottom: 5px;">${card.name}</div>
+                    <div style="font-size: 0.85em; color: #ccc; margin-bottom: 5px;">${card.description || 'No description'}</div>
+                    <div style="font-size: 0.8em; color: #888;">Type: ${card.type} | Cost: ⭐${card.cost || 0}</div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        modalContent.innerHTML = html;
+    }
+    
+    modal.style.display = 'block';
 }
 
 // Store AI avatar selection so it stays consistent
@@ -617,6 +747,10 @@ function handleEmptySlotClick(player, slotIndex) {
     const result = player.playMonster(selectedCard, slotIndex);
     if (result.success) {
         game.log(`${player.name} plays ${selectedCard.name}!`);
+        
+        // Trigger trap checks for opponent when playing monsters
+        game.triggerCardPlayTrap(player, selectedCard);
+        
         // Animate card play
         const cardElement = document.querySelector(`[data-card-id="${selectedCard.id}"].selected`);
         if (cardElement) {
@@ -867,23 +1001,45 @@ function showWinModal() {
 }
 
 function showGameModeSelection() {
+    // Remove existing modal if present
+    const existingModal = document.getElementById('gameModeModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.id = 'gameModeModal';
     modal.style.display = 'block';
+    modal.style.opacity = '1';
+    modal.style.visibility = 'visible';
+    
+    // Use larger, more mobile-friendly buttons
     modal.innerHTML = `
         <div class="modal-content win-modal">
-            <h2>🛡️ Defend the Fort</h2>
-            <p style="margin: 20px 0; font-size: 1.2em;">Choose your game mode:</p>
-            <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px; font-size: 1.1em;" onclick="startGame(false)">
+            <h2 style="margin-top: 0;">🛡️ Defend the Fort</h2>
+            <p style="margin: 20px 0; font-size: 1.2em; font-weight: 500;">Choose your game mode:</p>
+            <button class="btn btn-primary" style="width: 100%; margin-bottom: 15px; font-size: 1.2em; padding: 18px; min-height: 60px; border-radius: 10px; font-weight: bold; touch-action: manipulation;" onclick="startGame(false)">
                 👥 Player vs Player
             </button>
-            <button class="btn btn-secondary" style="width: 100%; font-size: 1.1em;" onclick="startGame(true)">
+            <button class="btn btn-secondary" style="width: 100%; font-size: 1.2em; padding: 18px; min-height: 60px; border-radius: 10px; font-weight: bold; touch-action: manipulation;" onclick="startGame(true)">
                 🤖 Player vs AI
             </button>
         </div>
     `;
+    
     document.body.appendChild(modal);
+    
+    // Force a reflow to ensure modal is visible
+    modal.offsetHeight;
+    
+    // Add click outside to close (optional, but helpful)
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            // Don't close on mobile - require button click
+            // modal.style.display = 'none';
+        }
+    });
 }
 
 function showBattleIntro(aiEnabled) {
@@ -1069,22 +1225,50 @@ function animateCardPlay(cardElement) {
     }
 }
 
+// Detect device type and apply appropriate class
+function detectDeviceType() {
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile && isTouchDevice) {
+        document.body.classList.add('mobile-device');
+        document.documentElement.style.setProperty('--is-mobile', '1');
+    } else {
+        document.body.classList.add('desktop-device');
+        document.documentElement.style.setProperty('--is-mobile', '0');
+    }
+}
+
 // Initialize game when page loads
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
+    detectDeviceType();
     try {
-        // Build image mapping cache (detects available images)
+        // Show game mode selection IMMEDIATELY (don't wait for image mapping)
+        showGameModeSelection();
+        
+        // Build image mapping cache asynchronously (non-blocking)
+        // This runs in the background and doesn't delay the UI
         if (typeof buildImageMapping === 'function') {
-            await buildImageMapping();
-            console.log('[IMAGES] Image mapping built:', imageMappingCache);
+            buildImageMapping().then(() => {
+                console.log('[IMAGES] Image mapping built:', imageMappingCache);
+                // Refresh UI if game is already started
+                if (game && typeof updateUI === 'function') {
+                    updateUI();
+                }
+            }).catch(err => {
+                console.warn('[IMAGES] Image mapping failed (non-critical):', err);
+            });
         }
         
         // Initialize music player (but don't auto-play yet - wait for battle start)
-        musicPlayer = initializeMusicPlayer();
-        
-        // Show game mode selection
-        showGameModeSelection();
+        // Defer this slightly to prioritize modal display
+        setTimeout(() => {
+            musicPlayer = initializeMusicPlayer();
+        }, 100);
     } catch (error) {
         console.error('[ERROR] Error on DOMContentLoaded:', error);
+        // Still show modal even if there's an error
+        showGameModeSelection();
     }
 });
 

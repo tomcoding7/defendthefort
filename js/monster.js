@@ -157,16 +157,40 @@ class Monster {
             card.style.opacity = '0.6';
         }
         
-        // Add monster image if available
-        const imagePath = `assets/images/cards/monsters/${this.id}.png`;
+        // Add monster image if available (using flexible naming like Card class)
+        const baseImagePath = `assets/images/cards/monsters/${this.id}`;
+        const possibleImagePaths = [
+            `${baseImagePath}.png`,
+            `${baseImagePath.replace(/_/g, '')}.png`, // e.g., valiantknight.png
+            `${baseImagePath.replace(/_/g, '-')}.png`, // e.g., valiant-knight.png
+            `${baseImagePath.replace(/_/g, '')}.jpg`,
+            `${baseImagePath.replace(/_/g, '-')}.jpg`,
+            `${baseImagePath}.jpg`
+        ];
+        
         const monsterImage = document.createElement('img');
-        monsterImage.src = imagePath;
         monsterImage.className = 'monster-image';
         monsterImage.alt = this.name;
-        monsterImage.onerror = function() {
-            // Hide image if not found (fallback to text-only)
-            this.style.display = 'none';
+        monsterImage.style.width = '100%';
+        monsterImage.style.height = '120px';
+        monsterImage.style.objectFit = 'cover';
+        monsterImage.style.borderRadius = '8px';
+        monsterImage.style.marginBottom = '8px';
+        monsterImage.style.display = 'block';
+        
+        let currentVariationIndex = 0;
+        const tryNextVariation = () => {
+            currentVariationIndex++;
+            if (currentVariationIndex < possibleImagePaths.length) {
+                monsterImage.src = possibleImagePaths[currentVariationIndex];
+            } else {
+                // Hide image if all variations fail
+                monsterImage.style.display = 'none';
+            }
         };
+        
+        monsterImage.onerror = tryNextVariation;
+        monsterImage.src = possibleImagePaths[0];
         monsterImage.style.width = '100%';
         monsterImage.style.height = '120px';
         monsterImage.style.objectFit = 'cover';
@@ -185,10 +209,14 @@ class Monster {
         
         const stats = document.createElement('div');
         stats.className = 'monster-stats';
+        // Show temporary boost with visual indicator
+        const attackDisplay = this.temporaryAttackBoost > 0 
+            ? `${this.attack} <span style="color: #ffd700; font-size: 0.9em;">(+${this.temporaryAttackBoost})</span>`
+            : this.attack;
         stats.innerHTML = `
             <div class="monster-stat">
                 <div class="monster-stat-label">⚔️ ATK</div>
-                <div class="monster-stat-value">${this.attack}</div>
+                <div class="monster-stat-value">${attackDisplay}</div>
             </div>
             <div class="monster-stat">
                 <div class="monster-stat-label">🛡️ DEF</div>
@@ -240,10 +268,14 @@ class Monster {
         
         const stats = element.querySelector('.monster-stats');
         if (stats) {
+            // Show temporary boost with visual indicator
+            const attackDisplay = this.temporaryAttackBoost > 0 
+                ? `${this.attack} <span style="color: #ffd700; font-size: 0.9em;">(+${this.temporaryAttackBoost})</span>`
+                : this.attack;
             stats.innerHTML = `
                 <div class="monster-stat">
                     <div class="monster-stat-label">⚔️ ATK</div>
-                    <div class="monster-stat-value">${this.attack}</div>
+                    <div class="monster-stat-value">${attackDisplay}</div>
                 </div>
                 <div class="monster-stat">
                     <div class="monster-stat-label">🛡️ DEF</div>
