@@ -1,18 +1,61 @@
 // Music Player System
 class MusicPlayer {
-    constructor() {
+    constructor(mode = 'battle') {
         this.audio = null;
         this.currentTrackIndex = 0;
-        this.tracks = [
-            { name: 'Game Music 1', file: 'assets/music/gamemusic1.mp3' },
-            { name: 'Battle Music', file: 'assets/music/battlemusic.mp3' },
-            { name: 'Boss Battle', file: 'assets/music/bossbattle.mp3' }
-        ];
+        this.mode = mode; // 'battle' or 'mainmenu'
+        this.tracks = this.getTracksForMode(mode);
         this.isPlaying = false;
         this.volume = 0.5; // Default volume (50%)
         this.shuffleMode = true; // Enable shuffle/random by default
         this.playedTracks = []; // Track recently played songs to avoid immediate repeats
         this.initializePlayer();
+    }
+
+    getTracksForMode(mode) {
+        if (mode === 'mainmenu') {
+            return [
+                { name: 'Game Starter Music', file: 'assets/music/mainmenu/Game Starter Music.mp3' },
+                { name: 'Starter Music', file: 'assets/music/mainmenu/Starter Music.mp3' },
+                { name: 'Starter Music 2', file: 'assets/music/mainmenu/startermusic2.mp3' },
+                { name: 'Shop Music', file: 'assets/music/mainmenu/shopmusic.mp3' },
+                { name: 'Game Music 1', file: 'assets/music/mainmenu/gamemusic1.mp3' }
+            ];
+        } else {
+            // Battle mode
+            return [
+                { name: 'Game Music 1', file: 'assets/music/battle/gamemusic1.mp3' },
+                { name: 'Battle Music', file: 'assets/music/battle/battlemusic.mp3' },
+                { name: 'Boss Battle', file: 'assets/music/battle/bossbattle.mp3' }
+            ];
+        }
+    }
+
+    switchMode(newMode) {
+        if (newMode === this.mode) return;
+        
+        const wasPlaying = this.isPlaying;
+        this.pause();
+        
+        this.mode = newMode;
+        this.tracks = this.getTracksForMode(newMode);
+        this.currentTrackIndex = 0;
+        
+        // Load random first track if shuffle is enabled
+        if (this.shuffleMode) {
+            const randomIndex = Math.floor(Math.random() * this.tracks.length);
+            this.loadTrack(randomIndex);
+        } else {
+            this.loadTrack(0);
+        }
+        
+        // Update UI to reflect new tracks
+        this.updateUI();
+        
+        // Resume playing if it was playing before
+        if (wasPlaying) {
+            this.play();
+        }
     }
 
     initializePlayer() {
@@ -187,7 +230,15 @@ class MusicPlayer {
             playPauseBtn.textContent = this.isPlaying ? '⏸️' : '▶️';
         }
 
+        // Update track select dropdown with current tracks
         if (trackSelect) {
+            trackSelect.innerHTML = '';
+            this.tracks.forEach((track, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = track.name;
+                trackSelect.appendChild(option);
+            });
             trackSelect.value = this.currentTrackIndex;
         }
 
@@ -203,12 +254,41 @@ class MusicPlayer {
 
 // Initialize global music player
 let musicPlayer = null;
+let mainMenuMusicPlayer = null;
 
-function initializeMusicPlayer() {
-    musicPlayer = new MusicPlayer();
+function initializeMusicPlayer(mode = 'battle') {
+    if (mode === 'mainmenu') {
+        if (!mainMenuMusicPlayer) {
+            mainMenuMusicPlayer = new MusicPlayer('mainmenu');
+        }
+        return mainMenuMusicPlayer;
+    } else {
+        if (!musicPlayer) {
+            musicPlayer = new MusicPlayer('battle');
+        } else if (musicPlayer.mode !== 'battle') {
+            // Switch existing player to battle mode
+            musicPlayer.switchMode('battle');
+        }
+        return musicPlayer;
+    }
+}
+
+function switchToBattleMusic() {
+    // Stop main menu music if playing
+    if (mainMenuMusicPlayer && mainMenuMusicPlayer.isPlaying) {
+        mainMenuMusicPlayer.pause();
+    }
     
-    // Try to start playing (may require user interaction)
-    // We'll let the user start it manually via the UI
-    return musicPlayer;
+    // Initialize or switch to battle music
+    if (!musicPlayer) {
+        musicPlayer = initializeMusicPlayer('battle');
+    } else {
+        musicPlayer.switchMode('battle');
+    }
+    
+    // Start playing battle music
+    if (musicPlayer) {
+        musicPlayer.play();
+    }
 }
 

@@ -717,7 +717,8 @@ body::after {
     border: 2px dashed rgba(255, 255, 255, 0.3);
     display: flex;
     gap: 10px;
-    flex-wrap: wrap;
+    flex-wrap: wrap; /* Wrap on desktop */
+    flex-direction: row; /* Explicit row direction */
 }
 
 .empty-slot {
@@ -1857,17 +1858,19 @@ body::after {
     .spell-trap-zone {
         min-height: 60px;
         max-height: 60px;
+        height: 60px; /* Fixed height to prevent wrapping */
         padding: 3px;
         gap: 3px;
         flex: 1; /* Take available space */
         overflow-x: auto;
         overflow-y: hidden;
         display: flex;
-        flex-wrap: nowrap; /* Keep in one row */
+        flex-direction: row; /* Explicitly row direction */
+        flex-wrap: nowrap !important; /* Force no wrapping - critical */
         align-items: center; /* Center cards vertically */
         -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         scrollbar-width: thin; /* Thin scrollbar on Firefox */
-        scrollbar-color: rgba(255, 255, 255, 0.3) transparent; /* Custom scrollbar color */
+        scrollbar-color: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.1); /* Custom scrollbar color */
     }
     
     /* Custom scrollbar for webkit browsers (Chrome, Safari) */
@@ -1899,20 +1902,20 @@ body::after {
     }
     
     .spell-card, .empty-spell-trap-slot {
-        min-width: 45px;
-        max-width: 60px;
-        min-height: 54px;
-        max-height: 54px;
+        min-width: 50px !important;
+        width: 50px !important;
+        max-width: 50px !important;
+        min-height: 54px !important;
+        max-height: 54px !important;
+        height: 54px !important;
         font-size: 0.65em;
         padding: 3px;
-        flex-shrink: 0; /* Don't shrink cards */
+        flex-shrink: 0 !important; /* Don't shrink cards - critical for scrolling */
+        flex-grow: 0 !important; /* Don't grow cards */
     }
     
-    /* Hide slots 4 and 5 on mobile (they're still in game logic, just not visible) */
-    /* Note: First child is the label, so slots start from 2nd child */
-    .spell-trap-zone > *:nth-child(n+6) {
-        display: none !important; /* Hide slots 4 and 5 (after label + 3 visible slots) */
-    }
+    /* Show ALL slots on mobile - they're scrollable now, no hiding */
+    /* All 5 slots should be visible via horizontal scrolling */
     
     .graveyard {
         min-width: 50px;

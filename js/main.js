@@ -118,9 +118,8 @@ function setupEventListeners() {
 }
 
 function setupMusicControls() {
-    if (!musicPlayer) {
-        musicPlayer = initializeMusicPlayer();
-    }
+    // Get current music player (battle or main menu)
+    const currentPlayer = musicPlayer || mainMenuMusicPlayer || initializeMusicPlayer('mainmenu');
 
     const playPauseBtn = document.getElementById('musicPlayPause');
     const prevBtn = document.getElementById('musicPrev');
@@ -130,36 +129,60 @@ function setupMusicControls() {
 
     if (playPauseBtn) {
         playPauseBtn.addEventListener('click', () => {
-            musicPlayer.toggle();
+            const player = musicPlayer || mainMenuMusicPlayer;
+            if (player) player.toggle();
         });
     }
 
     if (prevBtn) {
         prevBtn.addEventListener('click', () => {
-            musicPlayer.playPrevious();
+            const player = musicPlayer || mainMenuMusicPlayer;
+            if (player) player.playPrevious();
         });
     }
 
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
-            musicPlayer.playNext();
+            const player = musicPlayer || mainMenuMusicPlayer;
+            if (player) player.playNext();
         });
     }
 
+    // Populate track selection dropdown
     if (trackSelect) {
+        // Function to update dropdown
+        const updateTrackSelect = (player) => {
+            if (!player) return;
+            trackSelect.innerHTML = '';
+            player.tracks.forEach((track, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = track.name;
+                trackSelect.appendChild(option);
+            });
+            trackSelect.value = player.currentTrackIndex;
+        };
+        
+        // Update for current music player
+        updateTrackSelect(currentPlayer);
+        
         trackSelect.addEventListener('change', (e) => {
-            musicPlayer.selectTrack(parseInt(e.target.value));
+            const player = musicPlayer || mainMenuMusicPlayer;
+            if (player) player.selectTrack(parseInt(e.target.value));
         });
     }
 
     if (volumeSlider) {
         volumeSlider.addEventListener('input', (e) => {
-            musicPlayer.setVolume(e.target.value / 100);
+            const player = musicPlayer || mainMenuMusicPlayer;
+            if (player) player.setVolume(e.target.value / 100);
         });
     }
 
     // Update UI initially
-    musicPlayer.updateUI();
+    if (currentPlayer) {
+        currentPlayer.updateUI();
+    }
 }
 
 function updateUI() {
@@ -1075,12 +1098,15 @@ function showBattleIntro(aiEnabled) {
     // Initialize the game FIRST so it's visible behind the intro
     initializeGame(aiEnabled);
     
-    // Small delay to ensure game UI is rendered
-    setTimeout(() => {
-        // Show the intro screen overlay
-        introModal.style.display = 'flex';
-        introModal.style.pointerEvents = 'auto'; // Block interactions during intro
-        introModal.style.opacity = '1';
+        // Switch to battle music when battle starts
+        switchToBattleMusic();
+        
+        // Small delay to ensure game UI is rendered
+        setTimeout(() => {
+            // Show the intro screen overlay
+            introModal.style.display = 'flex';
+            introModal.style.pointerEvents = 'auto'; // Block interactions during intro
+            introModal.style.opacity = '1';
         
         // Reset animations
         const title = introModal.querySelector('.battle-intro-title');
@@ -1284,10 +1310,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         
-        // Initialize music player (but don't auto-play yet - wait for battle start)
-        // Defer this slightly to prioritize modal display
+        // Initialize main menu music player
         setTimeout(() => {
-            musicPlayer = initializeMusicPlayer();
+            if (!mainMenuMusicPlayer) {
+                mainMenuMusicPlayer = initializeMusicPlayer('mainmenu');
+                // Try to play main menu music (may require user interaction)
+                if (mainMenuMusicPlayer) {
+                    mainMenuMusicPlayer.play().catch(error => {
+                        console.log('[MUSIC] Main menu music autoplay prevented, will start after user interaction');
+                    });
+                }
+            }
         }, 100);
     } catch (error) {
         console.error('[ERROR] Error on DOMContentLoaded:', error);
