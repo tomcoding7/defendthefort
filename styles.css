@@ -1050,6 +1050,460 @@ body::after {
     text-align: center;
 }
 
+/* ============================================
+   MAIN MENU STYLES
+   ============================================ */
+
+.main-menu-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    animation: menuFadeIn 0.8s ease-out;
+}
+
+/* Animated background for main menu */
+.main-menu-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(240, 147, 251, 0.3) 0%, transparent 50%);
+    animation: auraMove1 20s ease-in-out infinite alternate;
+    z-index: -1;
+}
+
+.main-menu-screen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 60% 30%, rgba(240, 147, 251, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 30% 70%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 90% 50%, rgba(118, 75, 162, 0.4) 0%, transparent 50%);
+    animation: auraMove2 25s ease-in-out infinite alternate-reverse;
+    z-index: -1;
+}
+
+@keyframes menuFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.main-menu-content {
+    text-align: center;
+    width: 100%;
+    max-width: 600px;
+    padding: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.main-menu-title {
+    margin-bottom: 60px;
+    animation: titleGlow 3s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+    0%, 100% {
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0.5),
+                      0 0 40px rgba(255, 215, 0, 0.3),
+                      0 0 60px rgba(255, 215, 0, 0.2);
+    }
+    50% {
+        text-shadow: 0 0 30px rgba(255, 255, 255, 0.8),
+                      0 0 60px rgba(255, 215, 0, 0.5),
+                      0 0 90px rgba(255, 215, 0, 0.3);
+    }
+}
+
+.game-title {
+    font-size: 4.5em;
+    font-weight: 900;
+    color: #fff;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 8px;
+    text-shadow: 
+        0 0 20px rgba(255, 255, 255, 0.5),
+        0 0 40px rgba(255, 215, 0, 0.3),
+        0 4px 10px rgba(0, 0, 0, 0.5);
+    animation: titleFloat 3s ease-in-out infinite;
+}
+
+@keyframes titleFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.game-subtitle {
+    font-size: 1.5em;
+    color: rgba(255, 255, 255, 0.9);
+    margin-top: 15px;
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.main-menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+.main-menu-btn {
+    width: 100%;
+    padding: 25px 40px;
+    font-size: 1.5em;
+    font-weight: bold;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    overflow: hidden;
+    touch-action: manipulation;
+    min-height: 80px;
+}
+
+.main-menu-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.main-menu-btn:hover::before {
+    left: 100%;
+}
+
+.main-menu-btn:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        0 0 30px rgba(255, 215, 0, 0.3);
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.main-menu-btn:active {
+    transform: translateY(-2px) scale(0.98);
+}
+
+.main-menu-btn.btn-primary {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.main-menu-btn.btn-primary:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 1) 0%, rgba(118, 75, 162, 1) 100%);
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(102, 126, 234, 0.5);
+}
+
+.main-menu-btn.btn-shop {
+    background: linear-gradient(135deg, rgba(240, 147, 251, 0.8) 0%, rgba(245, 87, 108, 0.8) 100%);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.main-menu-btn.btn-shop:hover {
+    background: linear-gradient(135deg, rgba(240, 147, 251, 1) 0%, rgba(245, 87, 108, 1) 100%);
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(240, 147, 251, 0.5);
+}
+
+.main-menu-btn.btn-exit {
+    background: linear-gradient(135deg, rgba(255, 71, 87, 0.6) 0%, rgba(255, 107, 107, 0.6) 100%);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.main-menu-btn.btn-exit:hover {
+    background: linear-gradient(135deg, rgba(255, 71, 87, 0.8) 0%, rgba(255, 107, 107, 0.8) 100%);
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(255, 71, 87, 0.5);
+}
+
+.btn-icon {
+    font-size: 1.3em;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
+}
+
+.btn-text {
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.main-menu-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.stat-icon {
+    font-size: 2em;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
+}
+
+.stat-value {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Hide game container when main menu is visible */
+.main-menu-screen.active ~ .game-container,
+body.main-menu-active .game-container {
+    display: none !important;
+}
+
+/* ============================================
+   VICTORY SCREEN STYLES
+   ============================================ */
+
+.victory-modal {
+    max-width: 600px;
+    text-align: center;
+    animation: victoryFadeIn 0.5s ease-out;
+}
+
+@keyframes victoryFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.victory-title {
+    font-size: 3em;
+    color: #ffd700;
+    text-shadow: 
+        0 0 20px rgba(255, 215, 0, 0.8),
+        0 0 40px rgba(255, 215, 0, 0.5),
+        0 4px 10px rgba(0, 0, 0, 0.5);
+    margin-bottom: 20px;
+    animation: victoryPulse 2s ease-in-out infinite;
+}
+
+@keyframes victoryPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.victory-message {
+    font-size: 1.3em;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 30px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.victory-rewards {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin: 30px 0;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.reward-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    animation: rewardSlideIn 0.5s ease-out;
+    animation-fill-mode: both;
+}
+
+.reward-item:nth-child(1) { animation-delay: 0.1s; }
+.reward-item:nth-child(2) { animation-delay: 0.2s; }
+.reward-item:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes rewardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.reward-icon {
+    font-size: 3em;
+    filter: drop-shadow(0 2px 10px rgba(255, 215, 0, 0.5));
+}
+
+.reward-info {
+    flex: 1;
+    text-align: left;
+}
+
+.reward-label {
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 5px;
+}
+
+.reward-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.victory-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.victory-buttons .btn {
+    min-width: 200px;
+    padding: 15px 30px;
+    font-size: 1.2em;
+}
+
+/* Shop and Deck Studio Modal Styles */
+.shop-modal,
+.deck-modal {
+    max-width: 700px;
+    text-align: center;
+}
+
+.shop-content,
+.deck-studio-content {
+    padding: 20px;
+}
+
+.shop-currency-display {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #ffd700;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.currency-icon {
+    font-size: 1.2em;
+}
+
+/* Mobile styles for main menu */
+@media (max-width: 768px) {
+    .main-menu-content {
+        padding: 20px;
+        max-width: 95%;
+    }
+    
+    .game-title {
+        font-size: 2.5em;
+        letter-spacing: 4px;
+    }
+    
+    .game-subtitle {
+        font-size: 1.1em;
+        letter-spacing: 2px;
+    }
+    
+    .main-menu-btn {
+        padding: 20px 25px;
+        font-size: 1.2em;
+        min-height: 70px;
+    }
+    
+    .main-menu-title {
+        margin-bottom: 40px;
+    }
+    
+    .main-menu-stats {
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .victory-rewards {
+        gap: 15px;
+    }
+    
+    .reward-item {
+        padding: 12px;
+    }
+    
+    .victory-buttons {
+        flex-direction: column;
+    }
+    
+    .victory-buttons .btn {
+        width: 100%;
+    }
+}
+
 .close {
     color: #fff;
     float: right;
