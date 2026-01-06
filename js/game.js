@@ -231,6 +231,11 @@ class Game {
                 this.gameOver = true;
                 this.winner = this.getOpponent(player);
                 this.log(`🏆 ${this.winner.name} wins! ${player.name}'s fort has been destroyed!`);
+                
+                // Trigger defeat screen animation
+                if (window.showDefeatScreen) {
+                    window.showDefeatScreen(player, this.winner);
+                }
             }
         });
     }
@@ -250,6 +255,18 @@ class Game {
 
     getLogEntries() {
         return this.battleLog.slice(-20); // Return last 20 entries
+    }
+
+    triggerCardPlayTrap(player, card) {
+        // Check opponent's traps when a card is played
+        const opponent = this.getOpponent(player);
+        if (opponent) {
+            this.checkTraps(opponent, 'on_opponent_card_play', {
+                card: card,
+                player: player,
+                opponent: opponent
+            });
+        }
     }
 
     checkTraps(player, eventType, context = {}) {

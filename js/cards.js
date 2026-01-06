@@ -59,10 +59,13 @@ async function buildImageMapping() {
                                     window.imageMappingCache = imageMappingCache;
                                 }
                             } else {
-                        // Try other variations asynchronously
-                        tryOtherVariations(cardId, basePath, possibleNames.slice(1));
-                    }
-                });
+                                // Try other variations asynchronously
+                                tryOtherVariations(cardId, basePath, possibleNames.slice(1));
+                            }
+                        }).catch(() => {
+                            // Silently handle errors - image doesn't exist, try variations
+                            tryOtherVariations(cardId, basePath, possibleNames.slice(1));
+                        });
             }
             
             currentIndex = endIndex;
@@ -174,7 +177,23 @@ class Card {
                 }
             };
             
-            cardImage.onerror = tryNextVariation;
+            cardImage.onerror = () => {
+                // Silently try next variation - suppress console errors
+                tryNextVariation();
+            };
+            
+            // Suppress error events from showing in console
+            cardImage.addEventListener('error', (e) => {
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+            }, { capture: true, once: false });
+            
+            // Also prevent default error handling
+            cardImage.addEventListener('error', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, true);
             
             // Start with first variation
             cardImage.src = basePath + imageVariations[0];

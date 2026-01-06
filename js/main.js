@@ -383,6 +383,36 @@ function updateMonsterField(fieldId, player) {
         if (monster && monster.isAlive()) {
             const monsterElement = monster.createElement();
             monsterElement.dataset.slotIndex = i;
+            monsterElement.dataset.monsterId = monster.id;
+            
+            // Ensure the element is visible and properly displayed
+            monsterElement.style.display = 'flex';
+            monsterElement.style.visibility = 'visible';
+            monsterElement.style.opacity = '1';
+            monsterElement.style.position = 'relative';
+            monsterElement.style.zIndex = '2';
+            
+            // Check if this is a newly summoned monster (for animation)
+            // Use a timestamp-based check instead of dataset to avoid persistence issues
+            const monsterId = `${player.id}-${i}-${monster.id}`;
+            const lastUpdateKey = `lastMonsterUpdate_${monsterId}`;
+            const currentTime = Date.now();
+            const lastUpdate = window[lastUpdateKey] || 0;
+            
+            // If this monster was just added (within last 2 seconds), animate it
+            if (currentTime - lastUpdate < 2000) {
+                monsterElement.classList.add('card-summoning');
+                // Add highlight effect to the slot instead of full-screen flash
+                monsterElement.classList.add('slot-highlight');
+                setTimeout(() => {
+                    // Remove animation class after animation completes
+                    monsterElement.classList.remove('card-summoning');
+                    monsterElement.classList.remove('slot-highlight');
+                }, 600);
+            }
+            
+            // Update timestamp
+            window[lastUpdateKey] = currentTime;
             
             // Highlight selected monster
             if (selectedMonsterSlot === i && player.id === game.getCurrentPlayer().id) {
@@ -436,12 +466,15 @@ function updateMonsterField(fieldId, player) {
             slots.appendChild(monsterElement);
         } else {
             slot.textContent = `Slot ${i + 1}`;
+            slot.dataset.slotIndex = i; // Ensure slotIndex is set
             slots.appendChild(slot);
             
             // Allow placing monsters in empty slots
             if (player.id === game.getCurrentPlayer().id) {
-                slot.addEventListener('click', () => {
-                    handleEmptySlotClick(player, i);
+                slot.addEventListener('click', (e) => {
+                    // Get slotIndex from the clicked element to ensure accuracy
+                    const clickedSlotIndex = parseInt(e.currentTarget.dataset.slotIndex) || i;
+                    handleEmptySlotClick(player, clickedSlotIndex);
                 });
             }
         }
@@ -742,9 +775,9 @@ function updateCharacterIcon(iconId, player) {
     // Determine which image to use based on player type
     let imagePath;
     if (player.name === 'AI Opponent') {
-        // Randomly select AI avatar (main2.png or girl1.png) and keep it consistent
+        // Randomly select AI avatar (girl or rival) and keep it consistent
         if (!aiAvatarSelected) {
-            const aiAvatars = ['main2.png', 'girl1.png'];
+            const aiAvatars = ['girl.png', 'rival.png', 'girl1.png', 'main2.png']; // Try multiple variations
             aiAvatarSelected = aiAvatars[Math.floor(Math.random() * aiAvatars.length)];
         }
         imagePath = `assets/images/avatar/${aiAvatarSelected}`;
@@ -806,8 +839,16 @@ function handleCardClick(card, player, event) {
         selectedCard = card;
         
         if (card.type === 'monster') {
-            // Show message to select a slot
-            game.log(`Select an empty monster slot to play ${card.name}`);
+            // Check if player has enough stars
+            if (player.canPlayCard(card)) {
+                game.log(`Select an empty monster slot to play ${card.name} (Cost: ${card.cost} Stars)`);
+            } else {
+                game.log(`Not enough Stars to play ${card.name}! You have ${player.stars} Stars, but it costs ${card.cost} Stars.`);
+                selectedCard = null;
+                cardElement.classList.remove('selected');
+                updateUI();
+                return;
+            }
         } else if (card.type === 'spell') {
             // Play spell - some go to zone, some execute immediately
             if (player.canPlayCard(card)) {
@@ -841,7 +882,25 @@ function handleCardClick(card, player, event) {
 
 function handleEmptySlotClick(player, slotIndex) {
     if (player.id !== game.getCurrentPlayer().id) return;
-    if (!selectedCard || selectedCard.type !== 'monster') return;
+    if (!selectedCard || selectedCard.type !== 'monster') {
+        if (!selectedCard) {
+            game.log('Please select a monster card from your hand first!');
+        }
+        return;
+    }
+    
+    // Validate slotIndex
+    if (slotIndex < 0 || slotIndex >= 4) {
+        game.log(`Invalid slot index: ${slotIndex}`);
+        return;
+    }
+    
+    // Check if slot is already occupied
+    if (player.monsterField[slotIndex] !== null) {
+        game.log(`Slot ${slotIndex + 1} is already occupied!`);
+        updateUI();
+        return;
+    }
     
     // On mobile, prevent placing monsters in slot 4 (index 3)
     const isMobile = window.innerWidth <= 768;
@@ -851,9 +910,15 @@ function handleEmptySlotClick(player, slotIndex) {
         return;
     }
     
+    // Play monster in the EXACT slot specified
     const result = player.playMonster(selectedCard, slotIndex);
     if (result.success) {
-        game.log(`${player.name} plays ${selectedCard.name}!`);
+        game.log(`${player.name} plays ${selectedCard.name} in slot ${slotIndex + 1}!`);
+        
+        // Mark this monster as just summoned for animation (before updateUI)
+        const monsterId = `${player.id}-${slotIndex}-${selectedCard.id}`;
+        const lastUpdateKey = `lastMonsterUpdate_${monsterId}`;
+        window[lastUpdateKey] = Date.now();
         
         // Trigger trap checks for opponent when playing monsters
         game.triggerCardPlayTrap(player, selectedCard);
@@ -863,9 +928,26 @@ function handleEmptySlotClick(player, slotIndex) {
         if (cardElement) {
             animateCardPlay(cardElement);
         }
+        
+        // Clear selection
+        selectedCard = null;
+        document.querySelectorAll('.hand-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Immediately update UI to show the new monster
         updateUI();
+        
+        // Force a second update after a tiny delay to ensure visibility
+        setTimeout(() => {
+            updateUI();
+        }, 100);
     } else {
-        game.log(result.message);
+        // Show detailed error message
+        game.log(`Cannot summon ${selectedCard.name}: ${result.message}`);
+        if (result.message.includes('Stars')) {
+            game.log(`You have ${player.stars} Stars, but ${selectedCard.name} costs ${selectedCard.cost} Stars.`);
+        }
         updateUI();
     }
 }
@@ -1092,6 +1174,59 @@ function handleFortAttack(targetPlayer) {
     }
 }
 
+// Show defeat screen (Yu-Gi-Oh style) when a player loses
+window.showDefeatScreen = function(defeatedPlayer, winner) {
+    // Get the defeated player's face image
+    let faceImagePath;
+    if (defeatedPlayer.name === 'AI Opponent') {
+        // AI uses the same avatar they had during the game (girl or rival)
+        // Try multiple possible filenames
+        const possibleNames = [
+            aiAvatarSelected || 'girl.png', // Use selected avatar or default to girl
+            'girl.png',
+            'girl1.png',
+            'rival.png',
+            'main2.png'
+        ];
+        // Use the same avatar that was selected at game start, or try variations
+        if (aiAvatarSelected) {
+            faceImagePath = `assets/images/avatar/${aiAvatarSelected}`;
+        } else {
+            // Try to find which file exists
+            faceImagePath = `assets/images/avatar/girl.png`; // Default
+        }
+    } else {
+        // Main character uses main.png
+        faceImagePath = 'assets/images/avatar/main.png';
+    }
+    
+    // Create defeat screen overlay
+    const defeatScreen = document.createElement('div');
+    defeatScreen.className = 'defeat-screen';
+    defeatScreen.innerHTML = `
+        <div class="defeat-face-container">
+            <img src="${faceImagePath}" alt="${defeatedPlayer.name}" class="defeat-face" onerror="this.style.display='none';">
+            <div class="defeat-message">${defeatedPlayer.id === 'player1' ? 'YOU LOST!' : 'YOU WON!'}</div>
+        </div>
+    `;
+    document.body.appendChild(defeatScreen);
+    
+    // Animate face appearing
+    setTimeout(() => {
+        defeatScreen.classList.add('show');
+    }, 100);
+    
+    // After showing face, fade it out and show win modal
+    setTimeout(() => {
+        defeatScreen.classList.add('fade-out');
+        setTimeout(() => {
+            defeatScreen.remove();
+            // Show regular win modal
+            showWinModal();
+        }, 1500);
+    }, 2500); // Show face for 2.5 seconds
+};
+
 function showWinModal() {
     const modal = document.getElementById('winModal');
     const winTitle = document.getElementById('winTitle');
@@ -1274,28 +1409,54 @@ window.animateBattle = function(attackerPlayerId, attackerSlot, targetPlayerId, 
     const targetElement = targetField.querySelector(`[data-slot-index="${targetSlot}"]`);
     
     if (attackerElement && targetElement) {
-        // Add attack animation
+        // Subtle attack animation - no flashing, just highlight
         attackerElement.classList.add('attacking');
         targetElement.classList.add('taking-damage');
         
-        // Create damage number effect
-        createDamageEffect(targetElement, '⚔️');
-        
+        // Remove animations after short duration
         setTimeout(() => {
             attackerElement.classList.remove('attacking');
             targetElement.classList.remove('taking-damage');
-        }, 600);
+        }, 300);
+        
+        // Optional: Only show damage effect if really needed (commented out to reduce flashing)
+        // createDamageEffect(targetElement, '⚔️');
     }
 };
 
 window.animateFortAttack = function(targetPlayerId) {
     const fortHP = document.getElementById(targetPlayerId === 'player1' ? 'player1FortHP' : 'player2FortHP');
+    const characterIcon = document.getElementById(targetPlayerId === 'player1' ? 'player1CharacterIcon' : 'player2CharacterIcon');
+    
+    // Animate fort HP
     if (fortHP) {
         fortHP.classList.add('fort-hit');
         createDamageEffect(fortHP.parentElement, '💥');
         setTimeout(() => {
             fortHP.classList.remove('fort-hit');
         }, 800);
+    }
+    
+    // Shake avatar and show chat bubble
+    if (characterIcon) {
+        // Add shake animation
+        characterIcon.classList.add('avatar-shake');
+        
+        // Create chat bubble
+        const chatBubble = document.createElement('div');
+        chatBubble.className = 'chat-bubble';
+        chatBubble.textContent = 'That hurt!';
+        characterIcon.appendChild(chatBubble);
+        
+        // Remove shake and bubble after animation
+        setTimeout(() => {
+            characterIcon.classList.remove('avatar-shake');
+            setTimeout(() => {
+                if (chatBubble.parentNode) {
+                    chatBubble.remove();
+                }
+            }, 500);
+        }, 1000);
     }
 };
 
@@ -1314,14 +1475,19 @@ window.animateMonsterDestroy = function(playerId, slotIndex) {
 };
 
 function createDamageEffect(element, emoji) {
+    // Reduced damage effects to prevent flashing
+    // Only show subtle effect if needed
+    if (!element) return;
+    
     const effect = document.createElement('div');
     effect.className = 'damage-effect';
     effect.textContent = emoji;
     effect.style.position = 'absolute';
     effect.style.pointerEvents = 'none';
-    effect.style.fontSize = '2em';
+    effect.style.fontSize = '1.2em'; // Smaller, less flashy
     effect.style.zIndex = '1000';
-    effect.style.animation = 'damageFloat 1s ease-out forwards';
+    effect.style.opacity = '0.7'; // More subtle
+    effect.style.animation = 'damageFloat 0.5s ease-out forwards'; // Shorter duration
     
     const rect = element.getBoundingClientRect();
     effect.style.left = (rect.left + rect.width / 2) + 'px';
@@ -1331,7 +1497,7 @@ function createDamageEffect(element, emoji) {
     
     setTimeout(() => {
         effect.remove();
-    }, 1000);
+    }, 500); // Remove faster
 }
 
 function animateCardPlay(cardElement) {

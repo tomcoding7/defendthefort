@@ -19,6 +19,9 @@ body {
     overscroll-behavior-y: contain;
     position: relative;
     transition: background 2s ease-in-out; /* Smooth background transitions */
+    /* Very shallow perspective for subtle depth only */
+    perspective: 2000px;
+    perspective-origin: 50% 50%;
 }
 
 /* Random background color schemes */
@@ -357,16 +360,26 @@ body::after {
     flex-direction: column;
     position: relative;
     z-index: 1; /* Above background effects */
+    /* Very subtle tilt for esports-style flat layout */
+    transform: rotateX(5deg);
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
 }
 
 .game-header {
     text-align: center;
     margin-bottom: 10px;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.5);
     padding: 10px;
     border-radius: 10px;
     backdrop-filter: blur(10px);
     flex-shrink: 0; /* Don't shrink header */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Flat esports-style depth */
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transform: translateZ(0);
 }
 
 .game-info {
@@ -446,18 +459,23 @@ body::after {
 }
 
 .player-area {
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
     padding: 20px;
     margin: 10px 0;
     backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.15);
     flex-shrink: 0; /* Don't shrink player areas */
     position: relative;
     z-index: 1; /* Above background effects */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    /* Flat esports-style depth with shadows and glow */
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(102, 126, 234, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     /* Add padding to prevent character icon from overlapping content */
     padding-right: 160px; /* Space for character icon on right side (player 1) */
+    transform: translateZ(0); /* Flat layering */
 }
 
 /* Opponent area needs padding on left for character icon */
@@ -494,7 +512,7 @@ body::after {
     height: 140px;
     border-radius: 50%;
     border: 4px solid rgba(255, 255, 255, 0.4);
-    overflow: hidden;
+    overflow: visible; /* Changed to visible to show chat bubble */
     background: rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
@@ -504,6 +522,74 @@ body::after {
     position: fixed;
     z-index: 1;
     pointer-events: none;
+    transition: transform 0.3s ease;
+}
+
+/* Avatar shake animation when fort is attacked */
+.character-icon.avatar-shake {
+    animation: avatarShake 0.5s ease-in-out;
+}
+
+@keyframes avatarShake {
+    0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translate(-8px, -8px) rotate(-5deg);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translate(8px, 8px) rotate(5deg);
+    }
+}
+
+/* Chat bubble for avatar */
+.chat-bubble {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 71, 87, 0.95);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    font-weight: bold;
+    white-space: nowrap;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(255, 71, 87, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    z-index: 1000;
+    pointer-events: none;
+    animation: chatBubblePop 0.5s ease-out;
+}
+
+/* Speech bubble tail */
+.chat-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid rgba(255, 71, 87, 0.95);
+}
+
+@keyframes chatBubblePop {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px) scale(0.8);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-5px) scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
 }
 
 /* Player 1 avatar - bottom right corner, but avoid HP area */
@@ -559,6 +645,106 @@ body::after {
 
 .fort-hp {
     transition: all 0.3s;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 1.4em;
+    color: #ff4757;
+    text-shadow: 
+        0 0 10px rgba(255, 71, 87, 0.8),
+        0 0 20px rgba(255, 71, 87, 0.5),
+        0 2px 5px rgba(0, 0, 0, 0.8);
+    position: relative;
+    padding: 8px 15px;
+    border: 2px solid rgba(255, 71, 87, 0.6);
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(20, 0, 0, 0.8) 100%);
+    box-shadow: 
+        inset 0 0 20px rgba(255, 71, 87, 0.2),
+        0 0 15px rgba(255, 71, 87, 0.4),
+        0 2px 10px rgba(0, 0, 0, 0.5);
+    display: inline-block;
+    min-width: 60px;
+    text-align: center;
+}
+
+/* Progress bar for HP - using parent container */
+.player-stats {
+    position: relative;
+}
+
+.player-stats::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, rgba(255, 71, 87, 0.3) 0%, rgba(255, 71, 87, 0.1) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+/* HP Progress bar for Player 1 (red) */
+.player-area .fort-hp::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: var(--hp-percentage, 100%);
+    height: 4px;
+    background: linear-gradient(90deg, #ff4757 0%, #ff6b6b 50%, #ff4757 100%);
+    border-radius: 2px;
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.8);
+    transition: width 0.5s ease;
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* HP Progress bar for Player 2 (blue) */
+.opponent-area .fort-hp::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: var(--hp-percentage, 100%);
+    height: 4px;
+    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 50%, #4facfe 100%);
+    border-radius: 2px;
+    box-shadow: 0 0 10px rgba(79, 172, 254, 0.8);
+    transition: width 0.5s ease;
+    animation: pulseGlowBlue 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(255, 71, 87, 0.8);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 71, 87, 1), 0 0 30px rgba(255, 71, 87, 0.6);
+    }
+}
+
+@keyframes pulseGlowBlue {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(79, 172, 254, 0.8);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(79, 172, 254, 1), 0 0 30px rgba(79, 172, 254, 0.6);
+    }
+}
+
+/* Player 2 HP (blue theme) */
+.opponent-area .fort-hp {
+    color: #4facfe;
+    border-color: rgba(79, 172, 254, 0.6);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 10, 30, 0.8) 100%);
+    box-shadow: 
+        inset 0 0 20px rgba(79, 172, 254, 0.2),
+        0 0 15px rgba(79, 172, 254, 0.4),
+        0 2px 10px rgba(0, 0, 0, 0.5);
+    text-shadow: 
+        0 0 10px rgba(79, 172, 254, 0.8),
+        0 0 20px rgba(79, 172, 254, 0.5),
+        0 2px 5px rgba(0, 0, 0, 0.8);
 }
 
 .fort-hp[style*="cursor: pointer"] {
@@ -574,21 +760,60 @@ body::after {
     min-height: 200px;
     margin: 15px 0;
     padding: 15px;
+    /* Clean esports-style field with subtle depth */
     background: 
-        /* Grid pattern overlay */
-        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        /* Base gradient */
-        linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%);
-    background-size: 20px 20px, 20px 20px, 100% 100%;
-    border-radius: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+        /* Subtle scanline overlay */
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 255, 255, 0.02) 2px,
+            rgba(0, 255, 255, 0.02) 4px
+        ),
+        /* Subtle grid lines */
+        linear-gradient(rgba(0, 200, 255, 0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 200, 255, 0.15) 1px, transparent 1px),
+        /* Dark base */
+        linear-gradient(135deg, rgba(0, 0, 20, 0.85) 0%, rgba(0, 10, 30, 0.9) 100%);
+    background-size: 100% 100%, 20px 20px, 20px 20px, 100% 100%;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 200, 255, 0.3);
+    /* Flat depth with subtle shadows and glow */
     box-shadow: 
-        inset 0 0 30px rgba(0, 0, 0, 0.5),
-        0 0 20px rgba(102, 126, 234, 0.3),
-        0 4px 15px rgba(0, 0, 0, 0.4);
+        inset 0 0 30px rgba(0, 200, 255, 0.1),
+        0 2px 10px rgba(0, 0, 0, 0.5),
+        0 0 15px rgba(0, 200, 255, 0.2);
     position: relative;
     overflow: hidden;
+    transform: translateZ(0); /* Flat layering */
+}
+
+/* Animated scanline effect */
+.monster-field::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 255, 255, 0.1) 50%,
+        transparent 100%
+    );
+    animation: scanline 3s linear infinite;
+    pointer-events: none;
+    z-index: 2;
+}
+
+@keyframes scanline {
+    0% {
+        top: -100%;
+    }
+    100% {
+        top: 100%;
+    }
 }
 
 /* Add a subtle glow effect to the field */
@@ -637,6 +862,86 @@ body::after {
         inset 0 1px 0 rgba(255, 255, 255, 0.2),
         0 0 10px rgba(102, 126, 234, 0.3);
     backdrop-filter: blur(5px);
+    /* Cards stay front-facing with minimal rotation */
+    transform: rotateX(-5deg);
+    transform-style: preserve-3d;
+    /* Subtle depth with shadows instead of heavy 3D */
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 0 10px rgba(102, 126, 234, 0.3),
+        0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Card summon animation - subtle scale and fade */
+.monster-card.card-summoning {
+    animation: cardSummon 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    /* Ensure card is visible during and after animation */
+    visibility: visible !important;
+    display: flex !important;
+}
+
+@keyframes cardSummon {
+    0% {
+        transform: rotateX(-5deg) scale(0.8);
+        opacity: 0.5;
+    }
+    100% {
+        transform: rotateX(-5deg) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Remove animation class after it completes */
+.monster-card.card-summoning {
+    animation-fill-mode: forwards;
+}
+
+/* Ensure monster cards are always visible */
+.monster-card:not(.empty) {
+    visibility: visible !important;
+    display: flex !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+/* Ensure monster slots container doesn't hide cards */
+.monster-slots {
+    position: relative;
+    z-index: 1;
+    display: grid !important;
+    visibility: visible !important;
+}
+
+/* Subtle slot highlight effect for card summon - no full-screen flash */
+.monster-card.slot-highlight {
+    animation: slotHighlight 0.6s ease-out forwards;
+}
+
+@keyframes slotHighlight {
+    0% {
+        box-shadow: 
+            0 0 0 rgba(102, 126, 234, 0),
+            0 0 0 rgba(255, 215, 0, 0),
+            inset 0 0 0 rgba(102, 126, 234, 0);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+    50% {
+        box-shadow: 
+            0 0 20px rgba(102, 126, 234, 0.8),
+            0 0 30px rgba(255, 215, 0, 0.6),
+            inset 0 0 15px rgba(102, 126, 234, 0.4);
+        border-color: rgba(255, 215, 0, 0.8);
+    }
+    100% {
+        box-shadow: 
+            0 4px 15px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2),
+            0 0 10px rgba(102, 126, 234, 0.3),
+            0 2px 8px rgba(0, 0, 0, 0.3);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
 }
 
 /* Add a subtle inner glow */
@@ -662,11 +967,12 @@ body::after {
 }
 
 .monster-card:hover {
-    transform: translateY(-5px) scale(1.02);
+    transform: rotateX(-5deg) translateY(-3px) scale(1.01);
     box-shadow: 
-        0 8px 25px rgba(255, 255, 255, 0.4),
-        0 0 20px rgba(255, 215, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        0 6px 20px rgba(255, 255, 255, 0.3),
+        0 0 15px rgba(255, 215, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 2px 8px rgba(0, 0, 0, 0.4);
     border-color: #ffd700;
     z-index: 10;
 }
@@ -794,9 +1100,17 @@ body::after {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.5);
 }
 
+.spell-card {
+    /* Flat front-facing spell cards */
+    transform: translateZ(0);
+    transform-style: flat;
+}
+
 .spell-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 3px 15px rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 
+        0 3px 12px rgba(255, 255, 255, 0.25),
+        0 1px 5px rgba(0, 0, 0, 0.3);
 }
 
 .zone-label {
@@ -852,6 +1166,11 @@ body::after {
     min-width: 100px;
     min-height: 100px;
     padding: 10px;
+    transform: translateZ(0);
+    /* Flat esports-style depth */
+    box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
     background: rgba(0, 0, 0, 0.3);
     border-radius: 10px;
     border: 2px solid rgba(139, 0, 0, 0.5);
@@ -886,8 +1205,16 @@ body::after {
     display: flex;
     gap: 20px;
     margin-top: 20px;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.5);
     padding: 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Flat esports-style depth */
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.4),
+        0 0 15px rgba(102, 126, 234, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transform: translateZ(0);
     border-radius: 15px;
     backdrop-filter: blur(10px);
     flex-shrink: 0; /* Don't shrink bottom panel */
@@ -896,12 +1223,14 @@ body::after {
 
 .hand-container {
     flex: 1;
+    transform: translateZ(0);
 }
 
 .hand-label {
     font-weight: bold;
     margin-bottom: 10px;
     font-size: 1.1em;
+    transform: translateZ(0);
 }
 
 .hand {
@@ -920,6 +1249,9 @@ body::after {
     border-radius: 8px;
     padding: 15px;
     cursor: pointer;
+    /* Flat front-facing cards */
+    transform: translateZ(0);
+    transform-style: flat;
     transition: all 0.3s;
     min-width: 120px;
     max-width: 150px;
@@ -949,8 +1281,10 @@ body::after {
 }
 
 .hand-card:hover {
-    transform: translateY(-10px) scale(1.05);
-    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.4);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 
+        0 4px 15px rgba(255, 255, 255, 0.3),
+        0 2px 8px rgba(0, 0, 0, 0.4);
     z-index: 10;
 }
 
@@ -999,6 +1333,24 @@ body::after {
     flex-direction: column;
     gap: 10px;
     min-width: 200px;
+    transform: translateZ(0);
+}
+
+.action-panel .btn {
+    /* Flat esports-style buttons */
+    transform: translateZ(0);
+    box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.action-panel .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 4px 10px rgba(0, 0, 0, 0.4),
+        0 0 10px rgba(102, 126, 234, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .btn {
@@ -1090,6 +1442,112 @@ body::after {
     text-align: center;
 }
 
+/* Yu-Gi-Oh style defeat screen */
+.defeat-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+    pointer-events: none;
+}
+
+.defeat-screen.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.defeat-screen.fade-out {
+    opacity: 0;
+    transition: opacity 1.5s ease-out;
+}
+
+.defeat-face-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+
+.defeat-face {
+    width: 400px;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 20px;
+    border: 6px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 0 50px rgba(255, 71, 87, 0.8),
+        0 0 100px rgba(255, 71, 87, 0.5),
+        inset 0 0 30px rgba(0, 0, 0, 0.5);
+    animation: faceAppear 0.8s ease-out;
+    transform: scale(0.8);
+}
+
+.defeat-screen.show .defeat-face {
+    transform: scale(1);
+    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.defeat-message {
+    font-size: 4em;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 
+        0 0 20px rgba(255, 71, 87, 1),
+        0 0 40px rgba(255, 71, 87, 0.8),
+        0 0 60px rgba(255, 71, 87, 0.6),
+        0 4px 10px rgba(0, 0, 0, 0.8);
+    font-family: 'Orbitron', monospace;
+    letter-spacing: 8px;
+    animation: messageAppear 1s ease-out 0.3s both;
+    text-transform: uppercase;
+}
+
+@keyframes faceAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) translateY(50px);
+        filter: blur(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: blur(0);
+    }
+}
+
+@keyframes messageAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Mobile adjustments for defeat screen */
+@media (max-width: 768px) {
+    .defeat-face {
+        width: 250px;
+        height: 250px;
+    }
+    
+    .defeat-message {
+        font-size: 2.5em;
+        letter-spacing: 4px;
+    }
+}
+
 .close {
     color: #fff;
     float: right;
@@ -1120,10 +1578,10 @@ body::after {
 @keyframes damageFloat {
     0% {
         transform: translateY(0) scale(1);
-        opacity: 1;
+        opacity: 0.7;
     }
     100% {
-        transform: translateY(-50px) scale(1.5);
+        transform: translateY(-30px) scale(1.2);
         opacity: 0;
     }
 }
@@ -1133,14 +1591,21 @@ body::after {
 }
 
 .monster-card.attacking {
-    animation: attackPulse 0.6s ease;
-    transform: scale(1.1);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    animation: attackPulse 0.3s ease;
+    /* Subtle highlight instead of flash */
+    box-shadow: 
+        0 0 10px rgba(255, 215, 0, 0.5),
+        0 2px 8px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 215, 0, 0.6);
 }
 
 .monster-card.taking-damage {
-    animation: damageShake 0.6s ease;
-    border-color: #ff4757;
+    animation: damageShake 0.3s ease;
+    /* Subtle red border highlight */
+    border-color: rgba(255, 71, 87, 0.6);
+    box-shadow: 
+        0 0 8px rgba(255, 71, 87, 0.4),
+        0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .monster-card.destroyed {
@@ -1152,27 +1617,40 @@ body::after {
 }
 
 .card-played {
-    animation: cardPlayAnimation 0.5s ease;
+    animation: cardPlayAnimation 0.3s ease;
+    /* Subtle animation - no flashing */
+}
+
+@keyframes cardPlayAnimation {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(0.95);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 @keyframes attackPulse {
     0%, 100% {
-        transform: scale(1);
+        transform: rotateX(-5deg) scale(1);
     }
     50% {
-        transform: scale(1.15) translateY(-10px);
+        transform: rotateX(-5deg) scale(1.05);
     }
 }
 
 @keyframes damageShake {
     0%, 100% {
-        transform: translateX(0);
+        transform: rotateX(-5deg) translateX(0);
     }
     25% {
-        transform: translateX(-10px);
+        transform: rotateX(-5deg) translateX(-3px);
     }
     75% {
-        transform: translateX(10px);
+        transform: rotateX(-5deg) translateX(3px);
     }
 }
 
@@ -1675,6 +2153,17 @@ body::after {
         padding: 5px;
         display: flex;
         flex-direction: column;
+        /* Flat on mobile - no 3D */
+        transform: none;
+    }
+    
+    /* Flat cards on mobile */
+    .monster-card {
+        transform: none !important;
+    }
+    
+    .hand-card, .spell-card {
+        transform: none !important;
     }
     
     /* Performance optimizations for mobile */
