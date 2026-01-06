@@ -4,6 +4,76 @@ let selectedCard = null;
 let selectedMonsterSlot = null;
 let upgradeMode = null; // 'weapon', 'armor', or null
 
+// Currency system (for shops, not used in battles)
+let playerCurrency = {
+    gold: 0,
+    arcana: 0
+};
+
+// Load currency from localStorage
+function loadCurrency() {
+    try {
+        const saved = localStorage.getItem('playerCurrency');
+        if (saved) {
+            playerCurrency = JSON.parse(saved);
+        }
+    } catch (error) {
+        console.error('[CURRENCY] Error loading currency:', error);
+    }
+    updateCurrencyDisplay();
+}
+
+// Save currency to localStorage
+function saveCurrency() {
+    try {
+        localStorage.setItem('playerCurrency', JSON.stringify(playerCurrency));
+    } catch (error) {
+        console.error('[CURRENCY] Error saving currency:', error);
+    }
+}
+
+// Update currency display in header
+function updateCurrencyDisplay() {
+    const goldDisplay = document.getElementById('goldDisplay');
+    const arcanaDisplay = document.getElementById('arcanaDisplay');
+    
+    if (goldDisplay) {
+        goldDisplay.textContent = playerCurrency.gold.toLocaleString();
+    }
+    if (arcanaDisplay) {
+        arcanaDisplay.textContent = playerCurrency.arcana.toLocaleString();
+    }
+}
+
+// Award currency after battle
+function awardBattleCurrency(playerWon) {
+    if (playerWon) {
+        // Award gold for winning (random between 50-100)
+        const goldEarned = 50 + Math.floor(Math.random() * 51);
+        playerCurrency.gold += goldEarned;
+        
+        // Small chance to earn arcana (10% chance, 1-5 arcana)
+        if (Math.random() < 0.1) {
+            const arcanaEarned = 1 + Math.floor(Math.random() * 5);
+            playerCurrency.arcana += arcanaEarned;
+        }
+        
+        saveCurrency();
+        updateCurrencyDisplay();
+        
+        console.log(`[CURRENCY] Awarded ${goldEarned} gold${playerCurrency.arcana > 0 ? ` and ${playerCurrency.arcana} arcana` : ''} for victory`);
+    } else {
+        // Small consolation reward for losing (10-20 gold)
+        const consolationGold = 10 + Math.floor(Math.random() * 11);
+        playerCurrency.gold += consolationGold;
+        
+        saveCurrency();
+        updateCurrencyDisplay();
+        
+        console.log(`[CURRENCY] Awarded ${consolationGold} gold (consolation)`);
+    }
+}
+
 function initializeGame(aiEnabled = false) {
     try {
         // Reset AI avatar selection for new game
@@ -74,7 +144,10 @@ function setupEventListeners() {
     }
 
     // New game button
-    // Note: newGameBtn event listener is now handled in showWinModal() to avoid duplicate listeners
+    document.getElementById('newGameBtn').addEventListener('click', () => {
+        document.getElementById('winModal').style.display = 'none';
+        showGameModeSelection();
+    });
 
     // Click outside modal to close
     window.addEventListener('click', (e) => {
@@ -1019,317 +1092,27 @@ function handleFortAttack(targetPlayer) {
     }
 }
 
-// ============================================
-// MAIN MENU SYSTEM
-// ============================================
-
-// Player data storage (can be expanded to use localStorage later)
-let playerData = {
-    coins: 0,
-    level: 1,
-    xp: 0,
-    wins: 0,
-    losses: 0
-};
-
-/**
- * Show the main menu screen
- * Hides the game container and displays the main menu
- */
-function showMainMenu() {
-    console.log('[MAIN MENU] Showing main menu');
-    const mainMenu = document.getElementById('mainMenuScreen');
-    const gameContainer = document.getElementById('gameContainer');
-    
-    if (mainMenu) {
-        mainMenu.style.display = 'flex';
-        mainMenu.classList.add('active');
-    }
-    
-    if (gameContainer) {
-        gameContainer.style.display = 'none';
-    }
-    
-    // Update player stats display
-    updateMainMenuStats();
-    
-    // Stop battle music, play main menu music
-    if (musicPlayer && musicPlayer.isPlaying) {
-        musicPlayer.pause();
-    }
-    if (mainMenuMusicPlayer && !mainMenuMusicPlayer.isPlaying) {
-        mainMenuMusicPlayer.play().catch(err => {
-            console.log('[MAIN MENU] Music autoplay prevented:', err);
-        });
-    }
-}
-
-/**
- * Hide the main menu and show the game
- */
-function hideMainMenu() {
-    console.log('[MAIN MENU] Hiding main menu, starting game');
-    const mainMenu = document.getElementById('mainMenuScreen');
-    const gameContainer = document.getElementById('gameContainer');
-    
-    if (mainMenu) {
-        mainMenu.style.display = 'none';
-        mainMenu.classList.remove('active');
-    }
-    
-    if (gameContainer) {
-        gameContainer.style.display = 'flex';
-    }
-}
-
-/**
- * Update the stats displayed on the main menu
- */
-function updateMainMenuStats() {
-    const coinsEl = document.getElementById('menuCoins');
-    const levelEl = document.getElementById('menuLevel');
-    const winsEl = document.getElementById('menuWins');
-    
-    if (coinsEl) coinsEl.textContent = playerData.coins;
-    if (levelEl) levelEl.textContent = playerData.level;
-    if (winsEl) winsEl.textContent = playerData.wins;
-}
-
-/**
- * Setup main menu button event listeners
- */
-function setupMainMenu() {
-    console.log('[MAIN MENU] Setting up main menu buttons');
-    
-    // Start Game button
-    const startGameBtn = document.getElementById('startGameBtn');
-    if (startGameBtn) {
-        startGameBtn.addEventListener('click', () => {
-            console.log('[MAIN MENU] Start Game button clicked');
-            hideMainMenu();
-            showGameModeSelection();
-        });
-    }
-    
-    // Shop button
-    const shopBtn = document.getElementById('shopBtn');
-    if (shopBtn) {
-        shopBtn.addEventListener('click', () => {
-            console.log('[MAIN MENU] Shop button clicked');
-            showShop();
-        });
-    }
-    
-    // Deck Studio button
-    const deckStudioBtn = document.getElementById('deckStudioBtn');
-    if (deckStudioBtn) {
-        deckStudioBtn.addEventListener('click', () => {
-            console.log('[MAIN MENU] Deck Studio button clicked');
-            showDeckStudio();
-        });
-    }
-    
-    // Settings button (from main menu)
-    const settingsMenuBtn = document.getElementById('settingsMenuBtn');
-    if (settingsMenuBtn) {
-        settingsMenuBtn.addEventListener('click', () => {
-            console.log('[MAIN MENU] Settings button clicked');
-            const settingsModal = document.getElementById('settingsModal');
-            if (settingsModal) {
-                settingsModal.style.display = 'block';
-            }
-        });
-    }
-    
-    // Exit button
-    const exitBtn = document.getElementById('exitBtn');
-    if (exitBtn) {
-        exitBtn.addEventListener('click', () => {
-            console.log('[MAIN MENU] Exit button clicked');
-            if (confirm('Are you sure you want to exit the game?')) {
-                // In a real app, this might close the window or navigate away
-                console.log('[MAIN MENU] Exiting game');
-                // For web: just show a message
-                alert('Thanks for playing!');
-            }
-        });
-    }
-    
-    // Close shop modal
-    const closeShop = document.getElementById('closeShop');
-    if (closeShop) {
-        closeShop.addEventListener('click', () => {
-            const shopModal = document.getElementById('shopModal');
-            if (shopModal) {
-                shopModal.style.display = 'none';
-            }
-        });
-    }
-    
-    // Close deck studio modal
-    const closeDeckStudio = document.getElementById('closeDeckStudio');
-    if (closeDeckStudio) {
-        closeDeckStudio.addEventListener('click', () => {
-            const deckStudioModal = document.getElementById('deckStudioModal');
-            if (deckStudioModal) {
-                deckStudioModal.style.display = 'none';
-            }
-        });
-    }
-}
-
-/**
- * Show the shop modal
- * TODO: Implement shop functionality (purchase packs, cards, etc.)
- */
-function showShop() {
-    console.log('[SHOP] Opening shop');
-    const shopModal = document.getElementById('shopModal');
-    const shopCoins = document.getElementById('shopCoins');
-    
-    if (shopModal) {
-        shopModal.style.display = 'block';
-    }
-    
-    if (shopCoins) {
-        shopCoins.textContent = playerData.coins;
-    }
-}
-
-/**
- * Show the deck studio modal
- * TODO: Implement deck building functionality
- */
-function showDeckStudio() {
-    console.log('[DECK STUDIO] Opening deck studio');
-    const deckStudioModal = document.getElementById('deckStudioModal');
-    
-    if (deckStudioModal) {
-        deckStudioModal.style.display = 'block';
-    }
-}
-
-// ============================================
-// VICTORY SCREEN SYSTEM
-// ============================================
-
-/**
- * Calculate and display victory rewards
- * TODO: Expand this to include actual reward calculation logic
- */
-function calculateVictoryRewards() {
-    // Calculate rewards based on game performance
-    // This is placeholder logic - expand as needed
-    const baseCoins = 50;
-    const baseXP = 100;
-    const coinsEarned = baseCoins + Math.floor(Math.random() * 50); // 50-100 coins
-    const xpEarned = baseXP + Math.floor(Math.random() * 50); // 100-150 XP
-    
-    // Check if player won
-    const playerWon = game.winner && game.winner.id === 'player1';
-    
-    if (playerWon) {
-        playerData.coins += coinsEarned;
-        playerData.xp += xpEarned;
-        playerData.wins += 1;
-        
-        // Level up check (simple: every 500 XP = 1 level)
-        const newLevel = Math.floor(playerData.xp / 500) + 1;
-        if (newLevel > playerData.level) {
-            playerData.level = newLevel;
-            console.log(`[VICTORY] Level up! New level: ${playerData.level}`);
-        }
-    } else {
-        playerData.losses += 1;
-    }
-    
-    return {
-        coins: coinsEarned,
-        xp: xpEarned,
-        items: playerWon ? ['Card Pack x1'] : []
-    };
-}
-
 function showWinModal() {
     const modal = document.getElementById('winModal');
     const winTitle = document.getElementById('winTitle');
     const winMessage = document.getElementById('winMessage');
     
-    if (!modal || !winTitle || !winMessage) {
-        console.error('[VICTORY] Victory modal elements not found');
-        return;
-    }
-    
-    // Check if player won
-    const playerWon = game.winner && game.winner.id === 'player1';
-    
     const titles = ['Fort Master', 'King of Games', 'Fortress Conqueror', 'Defender Supreme'];
     const randomTitle = titles[Math.floor(Math.random() * titles.length)];
+    
+    // Check if player 1 won
+    const playerWon = game.winner && game.winner.id === 'player1';
     
     winTitle.textContent = playerWon ? `${randomTitle}!` : 'Defeat!';
     winMessage.textContent = playerWon 
         ? `${game.winner.name} has successfully defended their fort and conquered their opponent!`
         : `${game.winner.name} has defeated you! Better luck next time!`;
     
-    // Calculate and display rewards
-    const rewards = calculateVictoryRewards();
-    const rewardCoins = document.getElementById('rewardCoins');
-    const rewardXP = document.getElementById('rewardXP');
-    const rewardItems = document.getElementById('rewardItems');
-    
-    if (rewardCoins) {
-        rewardCoins.textContent = playerWon ? `+${rewards.coins}` : '+0';
-    }
-    if (rewardXP) {
-        rewardXP.textContent = playerWon ? `+${rewards.xp} XP` : '+0 XP';
-    }
-    if (rewardItems) {
-        rewardItems.textContent = playerWon && rewards.items.length > 0 
-            ? rewards.items.join(', ') 
-            : 'None';
-    }
-    
-    console.log('[VICTORY] Showing victory screen', {
-        winner: game.winner.name,
-        playerWon: playerWon,
-        rewards: rewards
-    });
+    // Award currency based on win/loss
+    awardBattleCurrency(playerWon);
     
     modal.style.display = 'block';
     modal.classList.add('win-animation');
-    
-    // Setup return to menu button (remove old listeners first)
-    const returnToMenuBtn = document.getElementById('returnToMenuBtn');
-    if (returnToMenuBtn) {
-        // Clone to remove old event listeners
-        const newReturnBtn = returnToMenuBtn.cloneNode(true);
-        returnToMenuBtn.parentNode.replaceChild(newReturnBtn, returnToMenuBtn);
-        
-        newReturnBtn.addEventListener('click', () => {
-            console.log('[VICTORY] Returning to main menu');
-            modal.style.display = 'none';
-            // Clean up game state
-            game = null;
-            hideMainMenu();
-            showMainMenu();
-        });
-    }
-    
-    // Setup play again button (remove old listeners first)
-    const newGameBtn = document.getElementById('newGameBtn');
-    if (newGameBtn) {
-        // Clone to remove old event listeners
-        const newBtn = newGameBtn.cloneNode(true);
-        newGameBtn.parentNode.replaceChild(newBtn, newGameBtn);
-        
-        newBtn.addEventListener('click', () => {
-            console.log('[VICTORY] Starting new game');
-            modal.style.display = 'none';
-            // Start new game directly
-            hideMainMenu();
-            showGameModeSelection();
-        });
-    }
 }
 
 function showGameModeSelection() {
@@ -1583,20 +1366,13 @@ function randomizeBackground() {
 
 // Initialize game when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('[INIT] Initializing game...');
-    
     // Randomize background theme
     randomizeBackground();
     
     detectDeviceType();
-    
-    // Setup main menu
-    setupMainMenu();
-    
-    // Show main menu on initial load (instead of game mode selection)
-    showMainMenu();
-    
     try {
+        // Show game mode selection IMMEDIATELY (don't wait for image mapping)
+        showGameModeSelection();
         
         // Build image mapping cache asynchronously (non-blocking)
         // This runs in the background and doesn't delay the UI
@@ -1611,6 +1387,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn('[IMAGES] Image mapping failed (non-critical):', err);
             });
         }
+        
+        // Load currency from localStorage
+        loadCurrency();
         
         // Initialize main menu music player
         setTimeout(() => {

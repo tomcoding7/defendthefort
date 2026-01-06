@@ -19,60 +19,21 @@
         <div class="particle particle-6"></div>
     </div>
     
-    <!-- Main Menu Screen -->
-    <div class="main-menu-screen" id="mainMenuScreen">
-        <div class="main-menu-content">
-            <div class="main-menu-title">
-                <h1 class="game-title">🛡️ DEFEND THE FORT</h1>
-                <p class="game-subtitle">Trading Card Game</p>
-            </div>
-            
-            <div class="main-menu-buttons">
-                <button class="main-menu-btn btn-primary" id="startGameBtn">
-                    <span class="btn-icon">⚔️</span>
-                    <span class="btn-text">Start Game</span>
-                </button>
-                <button class="main-menu-btn btn-shop" id="shopBtn">
-                    <span class="btn-icon">🛒</span>
-                    <span class="btn-text">Shop</span>
-                </button>
-                <button class="main-menu-btn" id="deckStudioBtn">
-                    <span class="btn-icon">📚</span>
-                    <span class="btn-text">Deck Studio</span>
-                </button>
-                <button class="main-menu-btn" id="settingsMenuBtn">
-                    <span class="btn-icon">⚙️</span>
-                    <span class="btn-text">Settings</span>
-                </button>
-                <button class="main-menu-btn btn-exit" id="exitBtn">
-                    <span class="btn-icon">🚪</span>
-                    <span class="btn-text">Exit</span>
-                </button>
-            </div>
-            
-            <!-- Player Stats Display (optional, can be expanded later) -->
-            <div class="main-menu-stats">
-                <div class="stat-item">
-                    <span class="stat-icon">⭐</span>
-                    <span class="stat-value" id="menuCoins">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-icon">📊</span>
-                    <span class="stat-value" id="menuLevel">1</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-icon">🏆</span>
-                    <span class="stat-value" id="menuWins">0</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="game-container" id="gameContainer" style="display: none;">
+    <div class="game-container">
         <header class="game-header">
             <div class="game-info">
                 <div class="turn-indicator" id="turnIndicator">Player 1's Turn</div>
                 <div class="turn-counter">Turn: <span id="turnNumber">1</span></div>
+                <div class="currency-display">
+                    <div class="currency-item">
+                        <span class="currency-icon">🪙</span>
+                        <span class="currency-value" id="goldDisplay">0</span>
+                    </div>
+                    <div class="currency-item">
+                        <span class="currency-icon">✨</span>
+                        <span class="currency-value" id="arcanaDisplay">0</span>
+                    </div>
+                </div>
                 <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
             </div>
         </header>
