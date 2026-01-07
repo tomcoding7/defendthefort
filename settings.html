@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Settings - Defend the Fort</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .settings-page {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .settings-header h1 {
+            color: #fff;
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.8);
+        }
+        
+        .back-to-menu-btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .back-to-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .settings-content {
+            color: #fff;
+        }
+        
+        .settings-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .settings-section h3 {
+            margin: 0 0 15px 0;
+            color: #fff;
+            font-size: 1.3em;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-page">
+        <div class="settings-header">
+            <h1>⚙️ Settings</h1>
+            <a href="index.html" class="back-to-menu-btn">← Back to Main Menu</a>
+        </div>
+        
+        <div class="settings-content">
+            <div class="settings-section">
+                <h3>🎵 Music Controls</h3>
+                <div class="music-controls" id="musicControls">
+                    <div class="music-info">
+                        <span id="currentTrackName">Game Music 1</span>
+                    </div>
+                    <div class="music-buttons">
+                        <button class="music-btn" id="musicPrev">⏮️</button>
+                        <button class="music-btn" id="musicPlayPause">▶️</button>
+                        <button class="music-btn" id="musicNext">⏭️</button>
+                    </div>
+                    <div class="music-volume-control">
+                        <span>🔊</span>
+                        <input type="range" id="musicVolume" min="0" max="100" value="50" class="volume-slider">
+                    </div>
+                    <select id="musicTrackSelect" class="music-select">
+                        <option value="0">Game Music 1</option>
+                        <option value="1">Battle Music</option>
+                        <option value="2">Boss Battle</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/music.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Initialize settings page
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[SETTINGS PAGE] Initializing...');
+            
+            // Setup music controls
+            if (typeof setupMusicControls === 'function') {
+                setupMusicControls();
+            } else if (typeof window.setupMusicControls === 'function') {
+                window.setupMusicControls();
+            } else {
+                console.warn('[SETTINGS PAGE] setupMusicControls function not found');
+            }
+        });
+    </script>
+</body>
+</html>
+

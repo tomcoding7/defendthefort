@@ -427,6 +427,17 @@ body::after {
     transform: rotateX(5deg);
     transform-style: preserve-3d;
     transition: transform 0.3s ease;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .game-container {
+        padding: 10px;
+        transform: none; /* Remove 3D transform on mobile for better performance */
+        min-height: 100vh;
+        overflow-y: auto;
+    }
 }
 
 .game-header {
@@ -1628,6 +1639,19 @@ body::after {
     display: flex;
     gap: 20px;
     min-height: 500px;
+    align-items: flex-start;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile layout for deck studio */
+@media (max-width: 768px) {
+    .deck-studio-container {
+        flex-direction: column;
+        gap: 15px;
+        min-height: auto;
+    }
 }
 
 .deck-studio-sidebar {
@@ -1635,6 +1659,13 @@ body::after {
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .deck-studio-sidebar {
+        flex: 0 0 auto;
+        width: 100%;
+    }
 }
 
 .deck-stats {
@@ -1689,6 +1720,15 @@ body::after {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .deck-studio-right-panel {
+        flex: 0 0 auto;
+        width: 100%;
+        max-height: 400px;
+    }
 }
 
 .deck-studio-right-panel h3 {
@@ -1706,6 +1746,14 @@ body::after {
     border-radius: 10px;
     border: 2px dashed rgba(255, 255, 255, 0.3);
     transition: all 0.3s;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .available-cards-list {
+        padding: 10px;
+        min-height: 150px;
+    }
 }
 
 .available-cards-list.drag-over {
@@ -1755,6 +1803,13 @@ body::after {
     flex-wrap: wrap;
     gap: 10px;
     justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .card-list {
+        gap: 8px;
+    }
 }
 
 .card-browser-item {
@@ -1784,6 +1839,14 @@ body::after {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .current-deck {
+        max-height: 300px;
+        min-height: 200px;
+    }
 }
 
 .current-deck h3 {
@@ -1802,6 +1865,16 @@ body::after {
     border-radius: 10px;
     border: 2px dashed rgba(255, 255, 255, 0.3);
     transition: all 0.3s;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .deck-list {
+        padding: 10px;
+        gap: 8px;
+        min-height: 150px;
+    }
 }
 
 .deck-list.drag-over {
@@ -1821,6 +1894,20 @@ body::after {
     font-size: 0.7em;
     font-weight: bold;
     z-index: 20;
+}
+
+.remove-from-deck-btn {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 768px) {
+    .remove-from-deck-btn {
+        min-width: 44px;
+        min-height: 44px;
+        font-size: 1.4em;
+        padding: 8px 12px;
+    }
 }
 
 .deck-card-item {
@@ -1864,6 +1951,18 @@ body::after {
     align-items: center;
     justify-content: center;
     transition: all 0.3s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 768px) {
+    .remove-card-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1.2em;
+        min-width: 44px;
+        min-height: 44px;
+    }
 }
 
 .remove-card-btn:hover {

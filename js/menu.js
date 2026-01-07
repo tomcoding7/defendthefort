@@ -56,11 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Settings button: hide main menu, show Settings modal
-    if (settingsMenuBtn && settingsModal) {
+    // Settings button: navigate to settings page
+    if (settingsMenuBtn) {
         settingsMenuBtn.addEventListener('click', () => {
-            hideMainMenu();
-            settingsModal.style.display = 'block';
+            // Navigate to separate settings page
+            window.location.href = 'settings.html';
         });
     }
     
