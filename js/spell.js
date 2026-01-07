@@ -37,7 +37,12 @@ class Spell {
         cardImage.style.display = 'block';
         
         let currentVariationIndex = 0;
-        const tryNextVariation = () => {
+        const tryNextVariation = (e) => {
+            // Suppress error from propagating to console
+            if (e) {
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }
             currentVariationIndex++;
             if (currentVariationIndex < possibleImagePaths.length) {
                 cardImage.src = possibleImagePaths[currentVariationIndex];
@@ -47,8 +52,22 @@ class Spell {
             }
         };
         
+        // Suppress console errors for missing images
+        cardImage.addEventListener('error', (e) => {
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            tryNextVariation(e);
+        }, { capture: true });
+        
         cardImage.onerror = tryNextVariation;
         cardImage.src = possibleImagePaths[0];
+        
+        // Final fallback: hide if image fails to load
+        cardImage.addEventListener('error', (e) => {
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            cardImage.style.display = 'none';
+        }, { once: true });
         
         const name = document.createElement('div');
         name.className = 'card-name';
@@ -165,17 +184,29 @@ class Spell {
                 return { success: true, message: 'Permanent attack boost applied' };
                 
             case 'permanent_health_boost':
-                // Vitality Surge - permanent +5 health to all monsters
+                // Vitality Surge - permanent +5 health to all monsters AND heal them
                 let healthBoostedCount = 0;
+                let healedCount = 0;
                 player.monsterField.forEach(monster => {
                     if (monster && monster.isAlive()) {
+                        // Increase max health
                         monster.maxHealth += 5;
-                        monster.currentHealth += 5;
+                        // Heal the monster (restore current health)
+                        const oldHealth = monster.currentHealth;
+                        monster.currentHealth = Math.min(monster.currentHealth + 5, monster.maxHealth);
+                        const actualHeal = monster.currentHealth - oldHealth;
+                        if (actualHeal > 0) {
+                            healedCount++;
+                        }
                         healthBoostedCount++;
                     }
                 });
-                game.log(`${player.name}'s ${this.name} permanently increases all monsters' Health by +5!`);
-                return { success: true, message: 'Permanent health boost applied' };
+                if (healedCount > 0) {
+                    game.log(`${player.name}'s ${this.name} permanently increases all monsters' Health by +5 and heals them! (${healedCount} monsters healed)`);
+                } else {
+                    game.log(`${player.name}'s ${this.name} permanently increases all monsters' Health by +5!`);
+                }
+                return { success: true, message: 'Permanent health boost and heal applied' };
                 
             case 'fortify_fort':
                 // Fortify - increase fort defense

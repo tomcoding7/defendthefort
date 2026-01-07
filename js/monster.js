@@ -189,7 +189,12 @@ class Monster {
         } else {
             // Fallback: try multiple filename variations
             let currentVariationIndex = 0;
-            const tryNextVariation = () => {
+            const tryNextVariation = (e) => {
+                // Suppress error from propagating to console
+                if (e) {
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                }
                 currentVariationIndex++;
                 if (currentVariationIndex < imageVariations.length) {
                     monsterImage.src = basePath + imageVariations[currentVariationIndex];
@@ -199,12 +204,21 @@ class Monster {
                 }
             };
             
+            // Suppress console errors for missing images
+            monsterImage.addEventListener('error', (e) => {
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                tryNextVariation(e);
+            }, { capture: true });
+            
             monsterImage.onerror = tryNextVariation;
             monsterImage.src = basePath + imageVariations[0];
         }
         
         // Final fallback: hide if image fails to load
-        monsterImage.addEventListener('error', () => {
+        monsterImage.addEventListener('error', (e) => {
+            e.stopPropagation();
+            e.stopImmediatePropagation();
             monsterImage.style.display = 'none';
         }, { once: true });
         monsterImage.style.width = '100%';

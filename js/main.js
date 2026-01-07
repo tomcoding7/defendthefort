@@ -101,11 +101,34 @@ function initializeGame(aiEnabled = false) {
 }
 
 function setupEventListeners() {
-    // End turn button
-    document.getElementById('endTurnBtn').addEventListener('click', () => {
-        game.endTurn();
-        updateUI();
-    });
+    // End turn button - ensure single listener and proper event handling
+    const endTurnBtn = document.getElementById('endTurnBtn');
+    if (endTurnBtn) {
+        // Remove any existing listeners by cloning
+        const newEndTurnBtn = endTurnBtn.cloneNode(true);
+        endTurnBtn.parentNode.replaceChild(newEndTurnBtn, endTurnBtn);
+        
+        // Add event listener with proper event handling
+        const handleEndTurn = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            if (game && !game.gameOver) {
+                game.endTurn();
+                updateUI();
+            }
+            return false;
+        };
+        
+        // Support both click and touch events for better mobile support
+        newEndTurnBtn.addEventListener('click', handleEndTurn, { passive: false });
+        newEndTurnBtn.addEventListener('touchend', handleEndTurn, { passive: false });
+        
+        // Ensure button is clickable
+        newEndTurnBtn.style.pointerEvents = 'auto';
+        newEndTurnBtn.style.cursor = 'pointer';
+        newEndTurnBtn.style.userSelect = 'none';
+    }
 
     // Upgrade fort button
     document.getElementById('upgradeFortBtn').addEventListener('click', () => {
@@ -117,7 +140,7 @@ function setupEventListeners() {
         document.getElementById('cardModal').style.display = 'none';
     });
 
-    // Settings button
+    // Settings button (in-game)
     const settingsBtn = document.getElementById('settingsBtn');
     const settingsModal = document.getElementById('settingsModal');
     const closeSettings = document.getElementById('closeSettings');
@@ -131,6 +154,23 @@ function setupEventListeners() {
     if (closeSettings && settingsModal) {
         closeSettings.addEventListener('click', () => {
             settingsModal.style.display = 'none';
+            // Return to main menu if game is not started
+            if (typeof game === 'undefined' || !game) {
+                setTimeout(() => {
+                    if (typeof showMainMenu === 'function') {
+                        showMainMenu();
+                    }
+                }, 100);
+            }
+        });
+    }
+    
+    // Back to main menu button in settings
+    const backToMainMenuBtn = document.getElementById('backToMainMenuBtn');
+    if (backToMainMenuBtn) {
+        backToMainMenuBtn.addEventListener('click', () => {
+            settingsModal.style.display = 'none';
+            showMainMenu();
         });
     }
     
@@ -144,10 +184,14 @@ function setupEventListeners() {
     }
 
     // New game button
-    document.getElementById('newGameBtn').addEventListener('click', () => {
-        document.getElementById('winModal').style.display = 'none';
-        showGameModeSelection();
-    });
+    const newGameBtn = document.getElementById('newGameBtn');
+    if (newGameBtn) {
+        newGameBtn.addEventListener('click', () => {
+            document.getElementById('winModal').style.display = 'none';
+            // Return to main menu after game ends
+            showMainMenu();
+        });
+    }
 
     // Click outside modal to close
     window.addEventListener('click', (e) => {
@@ -189,7 +233,14 @@ function setupEventListeners() {
 
 function setupMusicControls() {
     // Get current music player (battle or main menu)
-    const currentPlayer = musicPlayer || mainMenuMusicPlayer || initializeMusicPlayer('mainmenu');
+    // Check if musicPlayer and mainMenuMusicPlayer are defined (from music.js)
+    const musicPlayerExists = typeof musicPlayer !== 'undefined' && musicPlayer !== null;
+    const mainMenuMusicPlayerExists = typeof mainMenuMusicPlayer !== 'undefined' && mainMenuMusicPlayer !== null;
+    const initializeMusicPlayerExists = typeof initializeMusicPlayer === 'function';
+    
+    const currentPlayer = (musicPlayerExists ? musicPlayer : null) || 
+                         (mainMenuMusicPlayerExists ? mainMenuMusicPlayer : null) || 
+                         (initializeMusicPlayerExists ? initializeMusicPlayer('mainmenu') : null);
 
     const playPauseBtn = document.getElementById('musicPlayPause');
     const prevBtn = document.getElementById('musicPrev');
@@ -199,21 +250,21 @@ function setupMusicControls() {
 
     if (playPauseBtn) {
         playPauseBtn.addEventListener('click', () => {
-            const player = musicPlayer || mainMenuMusicPlayer;
+            const player = (musicPlayerExists ? musicPlayer : null) || (mainMenuMusicPlayerExists ? mainMenuMusicPlayer : null);
             if (player) player.toggle();
         });
     }
 
     if (prevBtn) {
         prevBtn.addEventListener('click', () => {
-            const player = musicPlayer || mainMenuMusicPlayer;
+            const player = (musicPlayerExists ? musicPlayer : null) || (mainMenuMusicPlayerExists ? mainMenuMusicPlayer : null);
             if (player) player.playPrevious();
         });
     }
 
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
-            const player = musicPlayer || mainMenuMusicPlayer;
+            const player = (musicPlayerExists ? musicPlayer : null) || (mainMenuMusicPlayerExists ? mainMenuMusicPlayer : null);
             if (player) player.playNext();
         });
     }
@@ -237,14 +288,14 @@ function setupMusicControls() {
         updateTrackSelect(currentPlayer);
         
         trackSelect.addEventListener('change', (e) => {
-            const player = musicPlayer || mainMenuMusicPlayer;
+            const player = (musicPlayerExists ? musicPlayer : null) || (mainMenuMusicPlayerExists ? mainMenuMusicPlayer : null);
             if (player) player.selectTrack(parseInt(e.target.value));
         });
     }
 
     if (volumeSlider) {
         volumeSlider.addEventListener('input', (e) => {
-            const player = musicPlayer || mainMenuMusicPlayer;
+            const player = (musicPlayerExists ? musicPlayer : null) || (mainMenuMusicPlayerExists ? mainMenuMusicPlayer : null);
             if (player) player.setVolume(e.target.value / 100);
         });
     }
@@ -442,16 +493,19 @@ function updateMonsterField(fieldId, player) {
                     } else if (selectedMonsterSlot === i) {
                         // Clicked same monster: deselect
                         selectedMonsterSlot = null;
+                        document.getElementById('upgradeOptions').innerHTML = '';
                         game.log('Attack cancelled.');
                         updateUI();
                     } else {
-                        // Different monster: change selection
+                        // Different monster: change selection and show upgrade options
                         if (!monster.canAttack()) {
                             game.log(`${monster.name} has already attacked this turn!`);
                             updateUI();
                             return;
                         }
                         selectedMonsterSlot = i;
+                        // Show upgrade options for the newly selected monster
+                        showMonsterUpgradeOptions(player, i, monster);
                         game.log(`Selected ${monster.name} to attack. Now select a target!`);
                         updateUI();
                     }
@@ -607,7 +661,8 @@ function handleSpellTrapSlotClick(player, slotIndex) {
     if (!selectedCard || (selectedCard.type !== 'spell' && selectedCard.type !== 'trap')) return;
     
     // Check if spell needs a target first
-    if (selectedCard.type === 'spell' && (selectedCard.id === 'lightning_bolt' || selectedCard.id === 'heal' || selectedCard.id === 'vitality_surge')) {
+    // Note: vitality_surge doesn't need a target - it affects all monsters
+    if (selectedCard.type === 'spell' && (selectedCard.id === 'lightning_bolt' || selectedCard.id === 'heal')) {
         if (!window.spellTargetMode) {
             game.log(`Select a target monster to use ${selectedCard.name}`);
             window.spellTargetMode = true;
@@ -622,34 +677,56 @@ function handleSpellTrapSlotClick(player, slotIndex) {
             // Trigger trap checks for opponent (like Star Drain)
             game.triggerCardPlayTrap(player, selectedCard);
             
-            // Execute spell immediately
-            const spellResult = result.spell.execute(game, player, window.spellTarget ? window.spellTarget : null);
-            if (!spellResult.success) {
-                // Refund if spell failed
-                player.stars += selectedCard.cost;
-                player.spellTrapZone[slotIndex] = null;
-                player.hand.push(selectedCard);
-            } else {
-                // Check if spell is continuous (stays on field)
-                const isContinuous = isContinuousSpell(selectedCard);
-                if (!isContinuous) {
-                    // Send to graveyard after execution (non-continuous spells)
-                    player.graveyard.push(selectedCard);
-                    player.spellTrapZone[slotIndex] = null;
-                }
-                // Continuous spells stay in the zone
-            }
-            window.spellTargetMode = false;
-            window.spellTarget = null;
-            
-            // Force UI update to show spell effects (especially for attack boosts)
+            // Update UI first to show spell on field
             updateUI();
+            
+            // Wait a moment to show spell on field, then execute
+            setTimeout(() => {
+                // Execute spell
+                if (!result.spell) {
+                    console.error('[SPELL] Spell object is missing from result');
+                    // Refund if spell object is missing
+                    player.stars += selectedCard.cost;
+                    player.spellTrapZone[slotIndex] = null;
+                    player.hand.push(selectedCard);
+                    updateUI();
+                    return;
+                }
+                
+                const spellResult = result.spell.execute(game, player, window.spellTarget ? window.spellTarget : null);
+                if (!spellResult || !spellResult.success) {
+                    // Refund if spell failed
+                    player.stars += selectedCard.cost;
+                    player.spellTrapZone[slotIndex] = null;
+                    player.hand.push(selectedCard);
+                    game.log(spellResult && spellResult.message ? spellResult.message : 'Spell failed to execute');
+                } else {
+                    // Check if spell is continuous (stays on field)
+                    const isContinuous = isContinuousSpell(selectedCard);
+                    if (!isContinuous) {
+                        // Send to graveyard after execution (non-continuous spells)
+                        // Wait a bit more to show it on field before moving to graveyard
+                        setTimeout(() => {
+                            player.graveyard.push(selectedCard);
+                            player.spellTrapZone[slotIndex] = null;
+                            updateUI();
+                        }, 800); // Show on field for 0.8 seconds
+                    }
+                    // Continuous spells stay in the zone
+                }
+                window.spellTargetMode = false;
+                window.spellTarget = null;
+                
+                // Force UI update to show spell effects (especially for attack boosts and card draws)
+                updateUI();
+            }, 300); // Small delay to show spell on field first
         }
     } else {
         result = player.playTrap(selectedCard, slotIndex);
     }
     
-    if (result.success) {
+    // Check if result exists and has success property
+    if (result && result.success) {
         game.log(`${player.name} plays ${selectedCard.name}!`);
         
         // Trigger trap checks for opponent when playing cards
@@ -664,8 +741,12 @@ function handleSpellTrapSlotClick(player, slotIndex) {
         selectedCard = null;
         // Update UI again to ensure all changes are reflected
         updateUI();
-    } else {
+    } else if (result && result.message) {
         game.log(result.message);
+        updateUI();
+    } else if (!result) {
+        // Handle case where result is undefined
+        game.log('Failed to play card. Please try again.');
         updateUI();
     }
 }
@@ -777,7 +858,8 @@ function updateCharacterIcon(iconId, player) {
     if (player.name === 'AI Opponent') {
         // Randomly select AI avatar (girl or rival) and keep it consistent
         if (!aiAvatarSelected) {
-            const aiAvatars = ['girl.png', 'rival.png', 'girl1.png', 'main2.png']; // Try multiple variations
+            // Try common filename variations
+            const aiAvatars = ['girl.png', 'rival.png', 'girl1.png', 'main2.png'];
             aiAvatarSelected = aiAvatars[Math.floor(Math.random() * aiAvatars.length)];
         }
         imagePath = `assets/images/avatar/${aiAvatarSelected}`;
@@ -787,17 +869,62 @@ function updateCharacterIcon(iconId, player) {
     }
     
     if (img) {
+        // Hide placeholder first
+        if (placeholder) {
+            placeholder.style.display = 'none';
+        }
+        
         img.src = imagePath;
         img.alt = player.name;
+        img.style.display = 'block';
+        
+        // Try multiple image variations if first fails
+        const tryImageVariations = (variations, index = 0) => {
+            if (index >= variations.length) {
+                // All variations failed, show placeholder
+                img.style.display = 'none';
+                if (placeholder) {
+                    placeholder.style.display = 'block';
+                    placeholder.textContent = player.name === 'AI Opponent' ? '🤖' : '👤';
+                }
+                return;
+            }
+            
+            img.src = `assets/images/avatar/${variations[index]}`;
+        };
+        
         // Show placeholder if image fails to load
         img.onerror = function() {
-            this.style.display = 'none';
-            if (placeholder) {
-                placeholder.style.display = 'block';
-                // Use robot emoji for AI, person for players
-                placeholder.textContent = player.name === 'AI Opponent' ? '🤖' : '👤';
+            if (player.name === 'AI Opponent') {
+                // Try other AI avatar variations
+                const variations = ['girl.png', 'rival.png', 'girl1.png', 'main2.png'];
+                const currentIndex = variations.indexOf(aiAvatarSelected);
+                if (currentIndex < variations.length - 1) {
+                    aiAvatarSelected = variations[currentIndex + 1];
+                    this.src = `assets/images/avatar/${aiAvatarSelected}`;
+                } else {
+                    // All failed, show placeholder
+                    this.style.display = 'none';
+                    if (placeholder) {
+                        placeholder.style.display = 'block';
+                        placeholder.textContent = '🤖';
+                    }
+                }
+            } else {
+                // Try main.png variations
+                const variations = ['main.png', 'main1.png'];
+                if (this.src.includes('main.png') && variations.length > 1) {
+                    this.src = 'assets/images/avatar/main1.png';
+                } else {
+                    this.style.display = 'none';
+                    if (placeholder) {
+                        placeholder.style.display = 'block';
+                        placeholder.textContent = '👤';
+                    }
+                }
             }
         };
+        
         img.onload = function() {
             this.style.display = 'block';
             if (placeholder) {
@@ -825,9 +952,21 @@ function updateBattleLog() {
     logContent.scrollTop = logContent.scrollHeight;
 }
 
+// Track last click time for double-click detection
+let lastCardClickTime = 0;
+let lastCardClickId = null;
+
 function handleCardClick(card, player, event) {
     if (player.id !== game.getCurrentPlayer().id) return;
     if (game.gameOver) return;
+    
+    const currentTime = Date.now();
+    const timeSinceLastClick = currentTime - lastCardClickTime;
+    const isDoubleClick = (card.id === lastCardClickId && timeSinceLastClick < 500); // 500ms double-click window
+    
+    // Update last click info
+    lastCardClickTime = currentTime;
+    lastCardClickId = card.id;
     
     // Deselect other cards
     document.querySelectorAll('.hand-card').forEach(c => c.classList.remove('selected'));
@@ -840,42 +979,121 @@ function handleCardClick(card, player, event) {
         
         if (card.type === 'monster') {
             // Check if player has enough stars
-            if (player.canPlayCard(card)) {
-                game.log(`Select an empty monster slot to play ${card.name} (Cost: ${card.cost} Stars)`);
-            } else {
+            if (!player.canPlayCard(card)) {
                 game.log(`Not enough Stars to play ${card.name}! You have ${player.stars} Stars, but it costs ${card.cost} Stars.`);
                 selectedCard = null;
                 cardElement.classList.remove('selected');
                 updateUI();
                 return;
             }
+            
+            // Double-click: automatically summon to first available slot
+            if (isDoubleClick) {
+                // Find first available slot
+                const availableSlot = player.monsterField.findIndex(slot => slot === null);
+                
+                if (availableSlot === -1) {
+                    game.log('No empty monster slots available!');
+                    selectedCard = null;
+                    cardElement.classList.remove('selected');
+                    updateUI();
+                    return;
+                }
+                
+                // On mobile, prevent placing in slot 4 (index 3)
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile && availableSlot >= 3) {
+                    game.log('On mobile, only the first 3 monster slots are available. Please remove a monster first.');
+                    selectedCard = null;
+                    cardElement.classList.remove('selected');
+                    updateUI();
+                    return;
+                }
+                
+                // Automatically summon the monster
+                handleEmptySlotClick(player, availableSlot);
+                return;
+            }
+            
+            // Single click: show message (for now, but double-click is the main way)
+            game.log(`Double-click to summon ${card.name}, or click an empty slot`);
         } else if (card.type === 'spell') {
-            // Play spell - some go to zone, some execute immediately
-            if (player.canPlayCard(card)) {
-                // Check if spell needs a target (like lightning bolt, heal)
-                if (card.id === 'lightning_bolt' || card.id === 'heal' || card.id === 'vitality_surge') {
+            // Check if player has enough stars
+            if (!player.canPlayCard(card)) {
+                game.log(`Not enough Stars to play ${card.name}! You have ${player.stars} Stars, but it costs ${card.cost} Stars.`);
+                selectedCard = null;
+                cardElement.classList.remove('selected');
+                updateUI();
+                return;
+            }
+            
+            // Check if spell needs a target (like lightning bolt, heal)
+            // Note: vitality_surge doesn't need a target - it affects all monsters
+            if (card.id === 'lightning_bolt' || card.id === 'heal') {
+                // Double-click: automatically target (if possible) or show target mode
+                if (isDoubleClick) {
                     game.log(`Select a target monster to use ${card.name}`);
                     selectedCard = card;
-                    // Store that we're selecting a target
                     window.spellTargetMode = true;
-                } else {
-                    // Spells that go to the zone (like traps) - need to select slot
-                    game.log(`Select an empty spell/trap slot to place ${card.name}`);
-                    selectedCard = card;
+                    return;
                 }
+                // Single click: show message
+                game.log(`Double-click to use ${card.name}, then select a target`);
+                selectedCard = card;
+                window.spellTargetMode = true;
             } else {
-                game.log('Not enough Stars to play this card!');
-                updateUI();
+                // Spells that don't need targets or go to the zone - double-click auto-plays
+                if (isDoubleClick) {
+                    // Find first available spell/trap slot
+                    const availableSlot = player.spellTrapZone.findIndex(slot => slot === null);
+                    
+                    if (availableSlot === -1) {
+                        game.log('No empty spell/trap slots available!');
+                        selectedCard = null;
+                        cardElement.classList.remove('selected');
+                        updateUI();
+                        return;
+                    }
+                    
+                    // Automatically play the spell/trap
+                    handleSpellTrapSlotClick(player, availableSlot);
+                    return;
+                }
+                // Single click: show message
+                game.log(`Double-click to play ${card.name}, or click an empty spell/trap slot`);
+                selectedCard = card;
             }
         } else if (card.type === 'trap') {
             // Traps go in spell/trap zone
-            if (player.canPlayCard(card)) {
-                game.log(`Select an empty spell/trap slot to place ${card.name}`);
-                selectedCard = card;
-            } else {
-                game.log('Not enough Stars to play this card!');
+            if (!player.canPlayCard(card)) {
+                game.log(`Not enough Stars to play ${card.name}! You have ${player.stars} Stars, but it costs ${card.cost} Stars.`);
+                selectedCard = null;
+                cardElement.classList.remove('selected');
                 updateUI();
+                return;
             }
+            
+            // Double-click: auto-place trap
+            if (isDoubleClick) {
+                // Find first available spell/trap slot
+                const availableSlot = player.spellTrapZone.findIndex(slot => slot === null);
+                
+                if (availableSlot === -1) {
+                    game.log('No empty spell/trap slots available!');
+                    selectedCard = null;
+                    cardElement.classList.remove('selected');
+                    updateUI();
+                    return;
+                }
+                
+                // Automatically play the trap
+                handleSpellTrapSlotClick(player, availableSlot);
+                return;
+            }
+            
+            // Single click: show message
+            game.log(`Double-click to play ${card.name}, or click an empty spell/trap slot`);
+            selectedCard = card;
         }
     }
 }
@@ -1089,12 +1307,14 @@ function upgradeMonsterWeapon(slotIndex) {
     const result = player.upgradeMonsterWeapon(slotIndex);
     if (result.success) {
         game.log(`${player.name} upgrades ${monster.name}'s weapon!`);
-        // Refresh upgrade options to show updated limits
+        // Refresh upgrade options for THIS monster to show updated limits
         showMonsterUpgradeOptions(player, slotIndex, monster);
+        // Also update UI to refresh all monster upgrade buttons
+        updateUI();
     } else {
         game.log(result.message);
+        updateUI();
     }
-    updateUI();
 }
 
 function upgradeMonsterArmor(slotIndex) {
@@ -1105,12 +1325,14 @@ function upgradeMonsterArmor(slotIndex) {
     const result = player.upgradeMonsterArmor(slotIndex);
     if (result.success) {
         game.log(`${player.name} upgrades ${monster.name}'s armor!`);
-        // Refresh upgrade options to show updated limits
+        // Refresh upgrade options for THIS monster to show updated limits
         showMonsterUpgradeOptions(player, slotIndex, monster);
+        // Also update UI to refresh all monster upgrade buttons
+        updateUI();
     } else {
         game.log(result.message);
+        updateUI();
     }
-    updateUI();
 }
 
 function showFortUpgradeOptions() {
@@ -1176,39 +1398,81 @@ function handleFortAttack(targetPlayer) {
 
 // Show defeat screen (Yu-Gi-Oh style) when a player loses
 window.showDefeatScreen = function(defeatedPlayer, winner) {
-    // Get the defeated player's face image
+    // Show the WINNER's face, not the loser's
+    // If player 1 won, show player 1's face. If AI won, show AI's face.
     let faceImagePath;
-    if (defeatedPlayer.name === 'AI Opponent') {
-        // AI uses the same avatar they had during the game (girl or rival)
-        // Try multiple possible filenames
-        const possibleNames = [
-            aiAvatarSelected || 'girl.png', // Use selected avatar or default to girl
-            'girl.png',
-            'girl1.png',
-            'rival.png',
-            'main2.png'
-        ];
-        // Use the same avatar that was selected at game start, or try variations
+    let messageText;
+    
+    if (winner.id === 'player1') {
+        // Player won - show player's face with "YOU WON!"
+        faceImagePath = 'assets/images/avatar/main.png';
+        messageText = 'YOU WON!';
+    } else {
+        // AI won - show AI's face with "YOU LOST!"
         if (aiAvatarSelected) {
             faceImagePath = `assets/images/avatar/${aiAvatarSelected}`;
         } else {
-            // Try to find which file exists
-            faceImagePath = `assets/images/avatar/girl.png`; // Default
+            // Fallback: try common variations
+            faceImagePath = 'assets/images/avatar/girl.png';
         }
-    } else {
-        // Main character uses main.png
-        faceImagePath = 'assets/images/avatar/main.png';
+        messageText = 'YOU LOST!';
     }
     
     // Create defeat screen overlay
     const defeatScreen = document.createElement('div');
     defeatScreen.className = 'defeat-screen';
-    defeatScreen.innerHTML = `
-        <div class="defeat-face-container">
-            <img src="${faceImagePath}" alt="${defeatedPlayer.name}" class="defeat-face" onerror="this.style.display='none';">
-            <div class="defeat-message">${defeatedPlayer.id === 'player1' ? 'YOU LOST!' : 'YOU WON!'}</div>
-        </div>
-    `;
+    
+    const faceContainer = document.createElement('div');
+    faceContainer.className = 'defeat-face-container';
+    
+    const faceImg = document.createElement('img');
+    faceImg.className = 'defeat-face';
+    faceImg.alt = winner.name;
+    faceImg.src = faceImagePath;
+    
+    // Try image variations if first fails
+    faceImg.onerror = function() {
+        if (winner.id === 'player1') {
+            // Try main.png variations for player
+            if (this.src.includes('main.png')) {
+                this.src = 'assets/images/avatar/main1.png';
+            }
+        } else {
+            // Try other AI avatar variations
+            const variations = ['girl.png', 'rival.png', 'girl1.png', 'main2.png'];
+            let currentIndex = variations.indexOf(aiAvatarSelected || 'girl.png');
+            if (currentIndex === -1) currentIndex = 0;
+            
+            if (currentIndex < variations.length - 1) {
+                this.src = `assets/images/avatar/${variations[currentIndex + 1]}`;
+            } else {
+                // If all fail, show a fallback (but keep trying)
+                console.warn('Could not load AI avatar image, using placeholder');
+            }
+        }
+    };
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'defeat-message';
+    messageDiv.textContent = messageText;
+    messageDiv.dataset.text = messageText; // For gold overlay effect
+    
+    // Add sparkles around the message (only for "YOU WON!")
+    if (messageText === 'YOU WON!') {
+        for (let i = 0; i < 8; i++) {
+            const sparkle = document.createElement('span');
+            sparkle.className = 'sparkle';
+            sparkle.textContent = '✨';
+            sparkle.style.left = `${10 + (i * 12)}%`;
+            sparkle.style.top = `${-30 + (i % 2) * 60}px`;
+            sparkle.style.animationDelay = `${i * 0.2}s`;
+            messageDiv.appendChild(sparkle);
+        }
+    }
+    
+    faceContainer.appendChild(faceImg);
+    faceContainer.appendChild(messageDiv);
+    defeatScreen.appendChild(faceContainer);
     document.body.appendChild(defeatScreen);
     
     // Animate face appearing
@@ -1250,6 +1514,45 @@ function showWinModal() {
     modal.classList.add('win-animation');
 }
 
+// Show main menu
+function showMainMenu() {
+    const mainMenu = document.getElementById('mainMenu');
+    const gameContainer = document.getElementById('gameContainer');
+    
+    if (mainMenu) {
+        mainMenu.style.display = 'flex';
+    }
+    if (gameContainer) {
+        gameContainer.style.display = 'none';
+    }
+    
+    // Close any open modals
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.style.display = 'none';
+    });
+}
+
+// Make showMainMenu globally available
+if (typeof window !== 'undefined') {
+    window.showMainMenu = showMainMenu;
+    window.hideMainMenu = hideMainMenu;
+}
+
+// Hide main menu and show game
+function hideMainMenu() {
+    const mainMenu = document.getElementById('mainMenu');
+    const gameContainer = document.getElementById('gameContainer');
+    
+    if (mainMenu) {
+        mainMenu.style.display = 'none';
+    }
+    if (gameContainer) {
+        gameContainer.style.display = 'block';
+    }
+}
+
+// Show game mode selection (for Play Game button)
 function showGameModeSelection() {
     // Remove existing modal if present
     const existingModal = document.getElementById('gameModeModal');
@@ -1274,6 +1577,9 @@ function showGameModeSelection() {
             </button>
             <button class="btn btn-secondary" style="width: 100%; font-size: 1.2em; padding: 18px; min-height: 60px; border-radius: 10px; font-weight: bold; touch-action: manipulation;" onclick="startGame(true)">
                 🤖 Player vs AI
+            </button>
+            <button class="btn btn-secondary" style="width: 100%; margin-top: 15px; font-size: 1em; padding: 12px; border-radius: 10px; touch-action: manipulation;" onclick="closeGameModeSelection(); showMainMenu();">
+                ← Back to Main Menu
             </button>
         </div>
     `;
@@ -1537,8 +1843,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     detectDeviceType();
     try {
-        // Show game mode selection IMMEDIATELY (don't wait for image mapping)
-        showGameModeSelection();
+        // Show main menu IMMEDIATELY (don't wait for image mapping)
+        showMainMenu();
         
         // Build image mapping cache asynchronously (non-blocking)
         // This runs in the background and doesn't delay the UI
@@ -1557,6 +1863,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Load currency from localStorage
         loadCurrency();
         
+        // Setup main menu listeners
+        setupMainMenuListeners();
+        
         // Initialize main menu music player
         setTimeout(() => {
             if (!mainMenuMusicPlayer) {
@@ -1571,8 +1880,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
     } catch (error) {
         console.error('[ERROR] Error on DOMContentLoaded:', error);
-        // Still show modal even if there's an error
-        showGameModeSelection();
+        // Still show main menu even if there's an error
+        showMainMenu();
     }
 });
 

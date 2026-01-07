@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Defend the Fort - Trading Card Game</title>
+    <title>Battle - Defend the Fort</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -22,28 +22,22 @@
         <div class="particle particle-6"></div>
     </div>
     
-    <!-- Main Menu -->
-    <div class="main-menu" id="mainMenu">
-        <div class="main-menu-content">
-            <h1 class="main-menu-title">🛡️ DEFEND THE FORT</h1>
-            <div class="main-menu-buttons">
-                <button class="btn btn-primary main-menu-btn" id="deckStudioMenuBtn">
-                    <span class="btn-icon">🃏</span>
-                    <span class="btn-text">Deck Studio</span>
-                </button>
-                <button class="btn btn-primary main-menu-btn" id="playGameMenuBtn">
-                    <span class="btn-icon">⚔️</span>
-                    <span class="btn-text">Play Game</span>
-                </button>
-                <button class="btn btn-primary main-menu-btn" id="settingsMenuBtn">
-                    <span class="btn-icon">⚙️</span>
-                    <span class="btn-text">Settings</span>
-                </button>
-            </div>
+    <!-- Game Mode Selection (shown first) -->
+    <div class="game-mode-selection" id="gameModeSelection">
+        <div class="game-mode-content">
+            <h1>⚔️ Select Game Mode</h1>
+            <button class="btn btn-primary" id="vsPlayerBtn" style="width: 100%; margin-bottom: 15px; font-size: 1.2em; padding: 18px; min-height: 60px; border-radius: 10px; font-weight: bold; touch-action: manipulation;">
+                🎮 Player vs Player
+            </button>
+            <button class="btn btn-secondary" id="vsAIBtn" style="width: 100%; font-size: 1.2em; padding: 18px; min-height: 60px; border-radius: 10px; font-weight: bold; touch-action: manipulation;">
+                🤖 Player vs AI
+            </button>
+            <button class="btn btn-secondary" id="backToMenuBtn" style="width: 100%; margin-top: 15px; font-size: 1em; padding: 12px; border-radius: 10px;">
+                ← Back to Main Menu
+            </button>
         </div>
     </div>
 
-    <!-- Game container removed - battle is now on battle.html -->
     <div class="game-container" id="gameContainer" style="display: none;">
         <header class="game-header">
             <div class="game-info">
@@ -59,7 +53,6 @@
                         <span class="currency-value" id="arcanaDisplay">0</span>
                     </div>
                 </div>
-                <button class="settings-btn" id="deckStudioBtn" title="Deck Studio">🃏</button>
                 <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
             </div>
         </header>
@@ -196,96 +189,81 @@
                 <div id="modalCardDetails"></div>
             </div>
         </div>
-
-        <!-- Deck Studio Modal -->
-        <div class="modal" id="deckStudioModal">
-            <div class="modal-content deck-studio-modal">
-                <span class="close" id="closeDeckStudio">&times;</span>
-                <h2>🃏 Deck Studio</h2>
-                <div class="deck-studio-container">
-                    <div class="deck-studio-sidebar">
-                        <div class="deck-stats" id="deckStats">
-                            <h3>Deck Statistics</h3>
-                            <div class="stat-item">
-                                <span>Total Cards:</span>
-                                <span id="statTotal">0</span>
-                            </div>
-                            <div class="stat-item">
-                                <span>Monsters:</span>
-                                <span id="statMonsters">0</span>
-                            </div>
-                            <div class="stat-item">
-                                <span>Spells:</span>
-                                <span id="statSpells">0</span>
-                            </div>
-                            <div class="stat-item">
-                                <span>Traps:</span>
-                                <span id="statTraps">0</span>
-                            </div>
-                        </div>
-                        <div class="deck-actions">
-                            <button class="btn btn-primary" id="saveDeckBtn">Save Deck</button>
-                            <button class="btn btn-secondary" id="resetDeckBtn">Reset to Default</button>
-                            <button class="btn btn-secondary" id="exportDeckBtn">Export Deck</button>
-                            <button class="btn btn-secondary" id="importDeckBtn">Import Deck</button>
-                        </div>
-                    </div>
-                    <div class="deck-studio-main">
-                        <div class="card-browser">
-                            <div class="card-filter">
-                                <button class="filter-btn active" data-filter="all">All Cards</button>
-                                <button class="filter-btn" data-filter="monster">Monsters</button>
-                                <button class="filter-btn" data-filter="spell">Spells</button>
-                                <button class="filter-btn" data-filter="trap">Traps</button>
-                            </div>
-                            <div class="card-list" id="cardBrowser"></div>
-                        </div>
-                        <div class="current-deck">
-                            <h3>Your Deck</h3>
-                            <div class="deck-list" id="currentDeck"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Win Modal -->
-        <div class="modal" id="winModal">
-            <div class="modal-content win-modal">
-                <h2 id="winTitle">Victory!</h2>
-                <p id="winMessage"></p>
-                <button class="btn btn-primary" id="newGameBtn">New Game</button>
-            </div>
-        </div>
-
-        <!-- Battle Start Intro Screen -->
-        <div class="modal battle-intro-modal" id="battleIntroModal">
-            <div class="battle-intro-content">
-                <div class="battle-intro-title">DEFEND THE FORT</div>
-                <div class="battle-intro-subtitle">Reduce your enemy's Fort HP to zero!</div>
-                <div class="battle-intro-narrator" id="battleIntroNarrator"></div>
-                <div class="battle-intro-commence">COMMENCE!</div>
-            </div>
-            <!-- Voice audio for intro -->
-            <audio id="introVoiceAudio" preload="auto">
-                <source src="assets/voice/letitcommence.mp3" type="audio/mpeg">
-            </audio>
-        </div>
     </div>
 
-
-    <script src="js/menu.js"></script>
+    <!-- Scripts (load in correct order) -->
     <script src="js/music.js"></script>
-    <script src="js/game.js"></script>
     <script src="js/cards.js"></script>
     <script src="js/deck.js"></script>
     <script src="js/monster.js"></script>
-    <script src="js/player.js"></script>
     <script src="js/spell.js"></script>
     <script src="js/trap.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/game.js"></script>
     <script src="js/ai.js"></script>
     <script src="js/main.js"></script>
-    <script src="js/deckStudio.js"></script>
+    <script>
+        // Initialize battle page
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[BATTLE PAGE] Initializing...');
+            
+            // Show game mode selection first
+            const gameModeSelection = document.getElementById('gameModeSelection');
+            const gameContainer = document.getElementById('gameContainer');
+            const vsPlayerBtn = document.getElementById('vsPlayerBtn');
+            const vsAIBtn = document.getElementById('vsAIBtn');
+            const backToMenuBtn = document.getElementById('backToMenuBtn');
+            
+            if (gameModeSelection) {
+                gameModeSelection.style.display = 'flex';
+            }
+            
+            // Player vs Player
+            if (vsPlayerBtn) {
+                vsPlayerBtn.addEventListener('click', () => {
+                    if (gameModeSelection) gameModeSelection.style.display = 'none';
+                    if (gameContainer) gameContainer.style.display = 'block';
+                    if (typeof initializeGame === 'function') {
+                        initializeGame(false);
+                    } else if (typeof window.initializeGame === 'function') {
+                        window.initializeGame(false);
+                    } else {
+                        console.error('[BATTLE PAGE] initializeGame function not found!');
+                    }
+                });
+            }
+            
+            // Player vs AI
+            if (vsAIBtn) {
+                vsAIBtn.addEventListener('click', () => {
+                    if (gameModeSelection) gameModeSelection.style.display = 'none';
+                    if (gameContainer) gameContainer.style.display = 'block';
+                    if (typeof initializeGame === 'function') {
+                        initializeGame(true);
+                    } else if (typeof window.initializeGame === 'function') {
+                        window.initializeGame(true);
+                    } else {
+                        console.error('[BATTLE PAGE] initializeGame function not found!');
+                    }
+                });
+            }
+            
+            // Back to Main Menu
+            if (backToMenuBtn) {
+                backToMenuBtn.addEventListener('click', () => {
+                    window.location.href = 'index.html';
+                });
+            }
+            
+            // Back to Main Menu from settings
+            const backToMainMenuBtn = document.getElementById('backToMainMenuBtn');
+            if (backToMainMenuBtn) {
+                backToMainMenuBtn.addEventListener('click', () => {
+                    window.location.href = 'index.html';
+                });
+            }
+        });
+    </script>
 </body>
 </html>
 

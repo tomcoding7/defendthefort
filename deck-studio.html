@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Deck Studio - Defend the Fort</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .deck-studio-page {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .deck-studio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .deck-studio-header h1 {
+            color: #fff;
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.8);
+        }
+        
+        .back-to-menu-btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .back-to-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="deck-studio-page">
+        <div class="deck-studio-header">
+            <h1>🃏 Deck Studio</h1>
+            <a href="index.html" class="back-to-menu-btn">← Back to Main Menu</a>
+        </div>
+        
+        <div class="deck-studio-container">
+            <div class="deck-studio-sidebar">
+                <div class="deck-stats" id="deckStats">
+                    <h3>Deck Statistics</h3>
+                    <div class="stat-item">
+                        <span>Total Cards:</span>
+                        <span id="statTotal">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Monsters:</span>
+                        <span id="statMonsters">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Spells:</span>
+                        <span id="statSpells">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Traps:</span>
+                        <span id="statTraps">0</span>
+                    </div>
+                </div>
+                <div class="deck-actions">
+                    <button class="btn btn-primary" id="saveDeckBtn">Save Deck</button>
+                    <button class="btn btn-secondary" id="resetDeckBtn">Reset to Default</button>
+                    <button class="btn btn-secondary" id="exportDeckBtn">Export Deck</button>
+                    <button class="btn btn-secondary" id="importDeckBtn">Import Deck</button>
+                </div>
+            </div>
+            <div class="deck-studio-main">
+                <div class="current-deck">
+                    <h3>Your Deck</h3>
+                    <div class="deck-list" id="currentDeck" 
+                         ondrop="handleDeckDrop(event)" 
+                         ondragover="handleDeckDragOver(event)"></div>
+                </div>
+            </div>
+            <div class="deck-studio-right-panel">
+                <h3>Available Cards</h3>
+                <div class="card-filter">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="monster">Monsters</button>
+                    <button class="filter-btn" data-filter="spell">Spells</button>
+                    <button class="filter-btn" data-filter="trap">Traps</button>
+                </div>
+                <div class="card-list available-cards-list" id="cardBrowser"
+                     ondrop="handleAvailableCardsDrop(event)" 
+                     ondragover="handleAvailableCardsDragOver(event)"
+                     ondragleave="handleAvailableCardsDragLeave(event)"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/cards.js"></script>
+    <script src="js/deck.js"></script>
+    <script src="js/deckStudio.js"></script>
+    <script>
+        // Initialize deck studio when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[DECK STUDIO PAGE] Page loaded, initializing...');
+            
+            // Wait a moment for all scripts to load
+            setTimeout(() => {
+                console.log('[DECK STUDIO PAGE] Checking dependencies...');
+                console.log('[DECK STUDIO PAGE] CARD_DATABASE available:', typeof CARD_DATABASE !== 'undefined' || typeof window.CARD_DATABASE !== 'undefined');
+                console.log('[DECK STUDIO PAGE] createCard available:', typeof createCard !== 'undefined' || typeof window.createCard !== 'undefined');
+                console.log('[DECK STUDIO PAGE] loadDeck available:', typeof loadDeck !== 'undefined' || typeof window.loadDeck !== 'undefined');
+                
+                // Initialize deck studio
+                if (typeof initDeckStudio === 'function') {
+                    console.log('[DECK STUDIO PAGE] Calling initDeckStudio...');
+                    initDeckStudio();
+                } else if (typeof window.initDeckStudio === 'function') {
+                    console.log('[DECK STUDIO PAGE] Calling window.initDeckStudio...');
+                    window.initDeckStudio();
+                } else {
+                    console.error('[DECK STUDIO PAGE] initDeckStudio function not found');
+                }
+                
+                // Render deck studio
+                if (typeof renderDeckStudio === 'function') {
+                    console.log('[DECK STUDIO PAGE] Calling renderDeckStudio...');
+                    renderDeckStudio();
+                } else if (typeof window.renderDeckStudio === 'function') {
+                    console.log('[DECK STUDIO PAGE] Calling window.renderDeckStudio...');
+                    window.renderDeckStudio();
+                } else {
+                    console.error('[DECK STUDIO PAGE] renderDeckStudio function not found');
+                }
+            }, 200);
+        });
+    </script>
+</body>
+</html>
+

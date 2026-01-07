@@ -105,6 +105,18 @@ function checkImageExistsFast(url) {
         const img = new Image();
         let resolved = false;
         
+        // Suppress error events from propagating to console
+        const handleError = (e) => {
+            if (e) {
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }
+            if (!resolved) {
+                resolved = true;
+                resolve(false);
+            }
+        };
+        
         img.onload = () => {
             if (!resolved) {
                 resolved = true;
@@ -112,12 +124,8 @@ function checkImageExistsFast(url) {
             }
         };
         
-        img.onerror = () => {
-            if (!resolved) {
-                resolved = true;
-                resolve(false);
-            }
-        };
+        img.addEventListener('error', handleError, { capture: true });
+        img.onerror = handleError;
         
         img.src = url;
         // Shorter timeout for mobile (300ms instead of 1000ms)
@@ -177,23 +185,17 @@ class Card {
                 }
             };
             
-            cardImage.onerror = () => {
-                // Silently try next variation - suppress console errors
+            // Suppress error events from showing in console
+            const handleImageError = (e) => {
+                if (e) {
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                }
                 tryNextVariation();
             };
             
-            // Suppress error events from showing in console
-            cardImage.addEventListener('error', (e) => {
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                return false;
-            }, { capture: true, once: false });
-            
-            // Also prevent default error handling
-            cardImage.addEventListener('error', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-            }, true);
+            cardImage.addEventListener('error', handleImageError, { capture: true });
+            cardImage.onerror = handleImageError;
             
             // Start with first variation
             cardImage.src = basePath + imageVariations[0];
@@ -568,6 +570,12 @@ function createCard(cardId) {
     }
 }
 
+// Make createCard and CARD_DATABASE globally available
+if (typeof window !== 'undefined') {
+    window.createCard = createCard;
+    window.CARD_DATABASE = CARD_DATABASE;
+}
+
 function getRandomCard() {
     const cardIds = Object.keys(CARD_DATABASE);
     const randomId = cardIds[Math.floor(Math.random() * cardIds.length)];
@@ -575,7 +583,11 @@ function getRandomCard() {
 }
 
 function getStarterDeck() {
-    // Each player starts with a balanced deck
+    // Load deck from saved deck file, or use default
+    if (typeof window !== 'undefined' && window.loadDeck) {
+        return window.loadDeck();
+    }
+    // Fallback to default deck if deck.js not loaded
     return [
         // Monsters
         'knight', 'knight', 'knight',
