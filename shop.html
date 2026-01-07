@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Shop - Defend the Fort</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .shop-page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .shop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .shop-header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+        }
+        
+        .currency-display {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .currency-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .currency-icon {
+            font-size: 1.5em;
+        }
+        
+        .currency-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .back-to-menu-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .back-to-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .free-packs-banner {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .free-packs-banner h2 {
+            margin: 0 0 10px 0;
+            color: #fff;
+            font-size: 1.5em;
+        }
+        
+        .free-packs-count {
+            font-size: 1.2em;
+            color: #fff;
+        }
+        
+        .packs-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .pack-card {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .pack-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .pack-card h3 {
+            color: #fff;
+            margin: 0 0 15px 0;
+            font-size: 1.8em;
+        }
+        
+        .pack-card p {
+            color: rgba(255, 255, 255, 0.7);
+            margin: 10px 0;
+        }
+        
+        .pack-cost {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #9b59b6;
+            margin: 20px 0;
+        }
+        
+        .buy-pack-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            touch-action: manipulation;
+            margin-top: 15px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .buy-pack-btn:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            transform: scale(1.02);
+        }
+        
+        .buy-pack-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .buy-pack-btn.free-pack {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .buy-pack-btn.free-pack:hover {
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+        }
+        
+        /* Pack Opening Modal */
+        .pack-opening-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        
+        .pack-opening-modal.show {
+            display: flex !important;
+        }
+        
+        .pack-opening-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .pack-opening-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .pack-opening-header h2 {
+            color: #fff;
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+        }
+        
+        .pack-cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            min-height: 250px;
+            margin-bottom: 30px;
+        }
+        
+        .pack-card-item {
+            width: 140px;
+            height: 200px;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(0);
+            opacity: 0;
+            transition: all 0.6s ease-out;
+        }
+        
+        .pack-card-item.revealed {
+            transform: scale(1);
+            opacity: 1;
+            animation: cardShine 1s ease-out;
+        }
+        
+        @keyframes cardShine {
+            0%, 100% {
+                filter: brightness(1);
+            }
+            50% {
+                filter: brightness(1.8);
+            }
+        }
+        
+        .pack-card-item[data-rarity="legendary"] {
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+        
+        .pack-card-item[data-rarity="epic"] {
+            border: 3px solid #9b59b6;
+            box-shadow: 0 0 20px rgba(155, 89, 182, 0.6);
+        }
+        
+        .pack-card-item[data-rarity="rare"] {
+            border: 3px solid #3498db;
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
+        }
+        
+        .pack-card-item[data-rarity="common"] {
+            border: 3px solid #95a5a6;
+            box-shadow: 0 0 10px rgba(149, 165, 166, 0.4);
+        }
+        
+        .pack-card-content {
+            padding: 10px;
+            color: #fff;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+        }
+        
+        .pack-card-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .pack-card-type {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .pack-card-rarity {
+            font-size: 11px;
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+        
+        .pack-opening-close {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto 0;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .pack-opening-close:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        @media (max-width: 768px) {
+            .shop-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .packs-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .pack-opening-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="shop-page">
+        <div class="shop-header">
+            <h1>🛒 Card Shop</h1>
+            <div class="currency-display">
+                <div class="currency-item">
+                    <span class="currency-icon">✨</span>
+                    <span class="currency-value" id="arcanaDisplay">0</span>
+                </div>
+            </div>
+            <a href="index.html" class="back-to-menu-btn">← Back to Main Menu</a>
+        </div>
+        
+        <div class="free-packs-banner" id="freePacksBanner" style="display: none;">
+            <h2>🎁 Free Packs Available!</h2>
+            <div class="free-packs-count">
+                You have <span id="freePacksCount">0</span> free pack(s)!
+            </div>
+        </div>
+        
+        <div class="packs-container">
+            <div class="pack-card">
+                <h3>📦 Starter Pack</h3>
+                <p>Contains 5 random cards</p>
+                <p style="font-size: 0.9em; color: rgba(255,255,255,0.6);">
+                    60% Common • 30% Rare • 8% Epic • 2% Legendary
+                </p>
+                <div class="pack-cost">Cost: 100 ✨ Arcana</div>
+                <button class="buy-pack-btn" data-pack-type="starter" id="starterPackBtn">
+                    Buy Pack
+                </button>
+            </div>
+            
+            <div class="pack-card">
+                <h3>💎 Premium Pack</h3>
+                <p>Contains 5 random cards</p>
+                <p style="font-size: 0.9em; color: rgba(255,255,255,0.6);">
+                    40% Common • 40% Rare • 15% Epic • 5% Legendary
+                </p>
+                <div class="pack-cost">Cost: 200 ✨ Arcana</div>
+                <button class="buy-pack-btn" data-pack-type="premium" id="premiumPackBtn">
+                    Buy Pack
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pack Opening Modal -->
+    <div class="pack-opening-modal" id="packOpeningModal">
+        <div class="pack-opening-content">
+            <div class="pack-opening-header">
+                <h2>✨ Pack Opening! ✨</h2>
+            </div>
+            <div class="pack-cards-container" id="packCardsContainer">
+                <!-- Cards will be revealed here -->
+            </div>
+            <button class="pack-opening-close" id="packOpeningClose" style="display: none;" onclick="closePackOpening()">
+                Continue
+            </button>
+        </div>
+    </div>
+    
+    <script src="js/cards.js"></script>
+    <script src="js/deck.js"></script>
+    <script src="js/shop.js"></script>
+    <script>
+        // Simple, clean button handler
+        function setupShop() {
+            console.log('[SHOP] Setting up shop page...');
+            
+            // Load currency
+            if (typeof loadCurrency === 'function') {
+                loadCurrency();
+            } else if (typeof window !== 'undefined' && typeof window.loadCurrency === 'function') {
+                window.loadCurrency();
+            }
+            
+            // Initialize shop
+            if (typeof initShop === 'function') {
+                initShop();
+            } else if (typeof window !== 'undefined' && typeof window.initShop === 'function') {
+                window.initShop();
+            }
+            
+            // Update UI
+            if (typeof updateShopUI === 'function') {
+                updateShopUI();
+            } else if (typeof window !== 'undefined' && typeof window.updateShopUI === 'function') {
+                window.updateShopUI();
+            }
+            
+            // Setup button handlers
+            setupButtons();
+        }
+        
+        function setupButtons() {
+            console.log('[SHOP] Setting up button handlers...');
+            
+            const starterBtn = document.getElementById('starterPackBtn');
+            const premiumBtn = document.getElementById('premiumPackBtn');
+            
+            if (starterBtn) {
+                starterBtn.onclick = function() {
+                    console.log('[SHOP] Starter pack button clicked!');
+                    handleBuyPack('starter');
+                };
+            }
+            
+            if (premiumBtn) {
+                premiumBtn.onclick = function() {
+                    console.log('[SHOP] Premium pack button clicked!');
+                    handleBuyPack('premium');
+                };
+            }
+            
+            console.log('[SHOP] Buttons set up!');
+        }
+        
+        function handleBuyPack(packType) {
+            console.log('[SHOP] handleBuyPack called with:', packType);
+            
+            const buyPackFn = window.buyPack || (typeof buyPack !== 'undefined' ? buyPack : null);
+            
+            if (buyPackFn && typeof buyPackFn === 'function') {
+                console.log('[SHOP] Calling buyPack function...');
+                try {
+                    buyPackFn(packType);
+                } catch (error) {
+                    console.error('[SHOP] Error calling buyPack:', error);
+                    alert('Error: ' + error.message);
+                }
+            } else {
+                console.error('[SHOP] buyPack function not found!');
+                alert('Shop system not loaded. Please refresh the page.');
+            }
+        }
+        
+        function closePackOpening() {
+            const modal = document.getElementById('packOpeningModal');
+            if (modal) {
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+            }
+            
+            if (typeof window.closePackOpening === 'function') {
+                window.closePackOpening();
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('[SHOP] DOMContentLoaded fired');
+            setTimeout(setupShop, 100);
+        });
+        
+        // Also try after a delay in case scripts load slowly
+        setTimeout(function() {
+            if (typeof initShop === 'undefined' && typeof window.initShop === 'undefined') {
+                console.warn('[SHOP] Shop scripts not loaded yet, retrying...');
+                setTimeout(setupShop, 500);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

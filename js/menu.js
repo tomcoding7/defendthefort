@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Get menu buttons
     const deckStudioMenuBtn = document.getElementById('deckStudioMenuBtn');
     const playGameMenuBtn = document.getElementById('playGameMenuBtn');
+    const shopMenuBtn = document.getElementById('shopMenuBtn');
     const settingsMenuBtn = document.getElementById('settingsMenuBtn');
     const backToMainMenuBtn = document.getElementById('backToMainMenuBtn');
     
@@ -53,6 +54,14 @@ document.addEventListener('DOMContentLoaded', () => {
         playGameMenuBtn.addEventListener('click', () => {
             // Navigate to separate battle page
             window.location.href = 'battle.html';
+        });
+    }
+    
+    // Shop button: navigate to shop page
+    if (shopMenuBtn) {
+        shopMenuBtn.addEventListener('click', () => {
+            // Navigate to separate shop page
+            window.location.href = 'shop.html';
         });
     }
     

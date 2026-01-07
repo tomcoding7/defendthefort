@@ -204,11 +204,29 @@ function renderCardBrowser(filter = 'all') {
         return;
     }
     
+    // Get player's card collection (only show cards they own)
+    let cardCollection = {};
+    if (typeof getCardCollection === 'function') {
+        cardCollection = getCardCollection();
+    } else if (typeof window !== 'undefined' && typeof window.getCardCollection === 'function') {
+        cardCollection = window.getCardCollection();
+    }
+    
+    // If collection is empty, show all cards (starter deck)
+    const hasCollection = Object.keys(cardCollection).length > 0;
+    
     const allCards = Object.values(cardDB);
     console.log('[DECK STUDIO] Total cards in database:', allCards.length);
+    console.log('[DECK STUDIO] Player collection has', Object.keys(cardCollection).length, 'card types');
+    
+    // Filter cards - only show cards player owns (or all if no collection yet)
+    let cardsToShow = allCards.filter(card => {
+        return !hasCollection || (cardCollection[card.id] && cardCollection[card.id] > 0);
+    });
+    
     const filteredCards = filter === 'all' 
-        ? allCards 
-        : allCards.filter(card => card.type === filter);
+        ? cardsToShow 
+        : cardsToShow.filter(card => card.type === filter);
     console.log('[DECK STUDIO] Filtered cards:', filteredCards.length);
     
     // Sort cards by type, then by cost, then by name
