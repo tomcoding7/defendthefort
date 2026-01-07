@@ -599,6 +599,13 @@ body::after {
     transition: transform 0.3s ease;
 }
 
+/* On mobile, use absolute positioning relative to player area */
+@media (max-width: 768px) {
+    .character-icon {
+        position: absolute !important; /* Override fixed positioning on mobile */
+    }
+}
+
 /* Avatar shake animation when fort is attacked */
 .character-icon.avatar-shake {
     animation: avatarShake 0.5s ease-in-out;
@@ -3010,25 +3017,53 @@ body::after {
     }
 
     .character-icon {
-        width: 120px;
-        height: 120px;
-        border-width: 3px;
+        width: 60px;
+        height: 60px;
+        border-width: 2px;
+        position: absolute !important; /* Change from fixed to absolute on mobile */
+        z-index: 2;
     }
 
+    /* Player 1 (bottom) - position above hand, don't cover fort health */
     .player-area.player-area .character-icon {
-        bottom: 2px;
-        right: 2px;
-        width: 60px;
-        height: 60px;
+        bottom: auto;
+        top: 10px; /* Position at top of player area, above content */
+        right: 10px;
+        width: 50px;
+        height: 50px;
         border-width: 2px;
     }
 
+    /* Player 2 (opponent) - position to not cover fort health */
     .opponent-area .character-icon {
-        top: 50px; /* Move down more on mobile to avoid HP area */
-        left: 2px;
-        width: 60px;
-        height: 60px;
+        top: 10px; /* Position at top, below header */
+        left: 10px;
+        width: 50px;
+        height: 50px;
         border-width: 2px;
+    }
+    
+    /* Reduce padding on player areas since icons are smaller and positioned differently */
+    .player-area {
+        padding: 10px !important;
+        padding-top: 70px !important; /* Extra top padding for icon */
+    }
+    
+    .opponent-area {
+        padding: 10px !important;
+        padding-top: 70px !important; /* Extra top padding for icon */
+        padding-left: 10px !important; /* Remove left padding since icon is smaller */
+    }
+    
+    /* Ensure hand is visible and not covered */
+    .bottom-panel {
+        position: relative;
+        z-index: 10;
+        margin-top: 10px;
+    }
+    
+    .hand-container {
+        z-index: 10;
     }
     
     /* Reduce padding on mobile since icons are smaller */
