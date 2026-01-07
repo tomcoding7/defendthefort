@@ -185,30 +185,28 @@ async function openPack(packType = 'starter', isFree = false) {
     return packCards;
 }
 
-// Show pack opening animation (one by one with shining effect)
+// Show pack opening animation with pack box and dramatic reveals
 function showPackOpeningAnimation(cards) {
     console.log('[SHOP.JS] showPackOpeningAnimation called with', cards.length, 'cards');
     const modal = document.getElementById('packOpeningModal');
     if (!modal) {
         console.error('[SHOP.JS] Pack opening modal not found!');
-        console.error('[SHOP.JS] Available elements with "pack" in id:', Array.from(document.querySelectorAll('[id*="pack"]')).map(el => el.id));
         alert('Pack opening modal not found! Please refresh the page.');
         return;
     }
-    console.log('[SHOP.JS] Modal found:', modal);
     
     const container = document.getElementById('packCardsContainer');
     if (!container) {
         console.error('[SHOP.JS] Pack cards container not found!');
-        console.error('[SHOP.JS] Modal children:', Array.from(modal.children).map(el => el.id || el.className));
         return;
     }
-    console.log('[SHOP.JS] Container found:', container);
     
-    // Clear previous cards
+    // Clear previous content
     container.innerHTML = '';
+    
+    // Show modal
     modal.style.display = 'flex';
-    console.log('[SHOP.JS] Modal displayed, starting card reveal...');
+    modal.classList.add('show');
     
     // Hide close button initially
     const closeBtn = document.getElementById('packOpeningClose');
@@ -216,35 +214,135 @@ function showPackOpeningAnimation(cards) {
         closeBtn.style.display = 'none';
     }
     
-    // Reveal cards one by one
+    // Create pack box animation
+    const packContainer = document.createElement('div');
+    packContainer.className = 'pack-container';
+    const packBox = document.createElement('div');
+    packBox.className = 'pack-box';
+    packContainer.appendChild(packBox);
+    container.appendChild(packContainer);
+    
+    // Animate pack opening
+    setTimeout(() => {
+        packBox.classList.add('opening');
+        
+        // Create particle burst when pack opens
+        createParticleBurst(packBox);
+        
+        // After pack opens, show cards
+        setTimeout(() => {
+            packContainer.style.display = 'none';
+            revealCards(cards, container, closeBtn);
+        }, 1000);
+    }, 500);
+}
+
+// Create particle burst effect
+function createParticleBurst(element) {
+    const rect = element.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        const angle = (Math.PI * 2 * i) / 30;
+        const distance = 100 + Math.random() * 50;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        
+        particle.style.position = 'fixed';
+        particle.style.left = centerX + 'px';
+        particle.style.top = centerY + 'px';
+        particle.style.setProperty('--tx', tx + 'px');
+        particle.style.setProperty('--ty', ty + 'px');
+        particle.style.animationDelay = (Math.random() * 0.3) + 's';
+        
+        document.body.appendChild(particle);
+        
+        setTimeout(() => {
+            if (particle.parentNode) {
+                particle.remove();
+            }
+        }, 2000);
+    }
+}
+
+// Reveal cards one by one with dramatic animation
+function revealCards(cards, container, closeBtn) {
     cards.forEach((cardData, index) => {
         setTimeout(() => {
-            console.log(`[SHOP.JS] Revealing card ${index + 1}/${cards.length}:`, cardData.id, cardData.rarity);
             const cardElement = createPackCardElement(cardData, index);
-            if (cardElement && container) {
-                container.appendChild(cardElement);
-                console.log(`[SHOP.JS] Card ${index + 1} added to container`);
+            cardElement.className = 'pack-card-item';
+            cardElement.style.transform = 'scale(0) rotateY(180deg)';
+            cardElement.style.opacity = '0';
+            container.appendChild(cardElement);
+            
+            // Trigger reveal animation
+            setTimeout(() => {
+                cardElement.classList.add('revealing');
                 
-                // Trigger shine animation
+                // Add particles for rare cards
+                if (cardData.rarity === 'legendary' || cardData.rarity === 'epic') {
+                    createCardParticles(cardElement);
+                }
+                
+                // Mark as revealed after animation
                 setTimeout(() => {
+                    cardElement.classList.remove('revealing');
                     cardElement.classList.add('revealed');
-                    console.log(`[SHOP.JS] Card ${index + 1} revealed`);
-                }, 100);
-            } else {
-                console.error(`[SHOP.JS] Failed to create or append card ${index + 1}`);
-            }
+                }, 800);
+            }, 50);
         }, index * 600); // 600ms delay between each card
     });
     
     // Show close button after all cards are revealed
-    const totalTime = cards.length * 600 + 500;
-    console.log(`[SHOP.JS] Close button will show in ${totalTime}ms`);
+    const totalTime = cards.length * 600 + 1000;
     setTimeout(() => {
         if (closeBtn) {
             closeBtn.style.display = 'block';
-            console.log('[SHOP.JS] Close button shown');
         }
     }, totalTime);
+}
+
+// Create particle effects for rare cards
+function createCardParticles(cardElement) {
+    const rect = cardElement.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const rarity = cardElement.dataset.rarity;
+    
+    for (let i = 0; i < 15; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        const angle = (Math.PI * 2 * i) / 15;
+        const distance = 50 + Math.random() * 30;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        
+        particle.style.position = 'fixed';
+        particle.style.left = centerX + 'px';
+        particle.style.top = centerY + 'px';
+        particle.style.setProperty('--tx', tx + 'px');
+        particle.style.setProperty('--ty', ty + 'px');
+        particle.style.animationDelay = (Math.random() * 0.2) + 's';
+        
+        if (rarity === 'legendary') {
+            particle.style.background = 'radial-gradient(circle, #ffd700, transparent)';
+        } else {
+            particle.style.background = 'radial-gradient(circle, #9b59b6, transparent)';
+        }
+        
+        document.body.appendChild(particle);
+        
+        setTimeout(() => {
+            if (particle.parentNode) {
+                particle.remove();
+            }
+        }, 2000);
+    }
 }
 
 // Create pack card element with shine animation
@@ -255,7 +353,7 @@ function createPackCardElement(cardData, index) {
     if (!card) return document.createElement('div');
     
     const cardDiv = document.createElement('div');
-    cardDiv.className = 'pack-card';
+    cardDiv.className = 'pack-card-item';
     cardDiv.dataset.rarity = cardData.rarity;
     cardDiv.style.animationDelay = `${index * 0.1}s`;
     
@@ -267,6 +365,7 @@ function createPackCardElement(cardData, index) {
         const cardElement = cardObj.createElement();
         cardElement.style.width = '100%';
         cardElement.style.height = '100%';
+        cardElement.style.objectFit = 'cover';
         cardDiv.appendChild(cardElement);
     } else {
         // Fallback if card creation fails
@@ -278,11 +377,6 @@ function createPackCardElement(cardData, index) {
             </div>
         `;
     }
-    
-    // Add shine overlay
-    const shine = document.createElement('div');
-    shine.className = 'pack-card-shine';
-    cardDiv.appendChild(shine);
     
     return cardDiv;
 }

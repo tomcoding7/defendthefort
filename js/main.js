@@ -46,6 +46,83 @@ function updateCurrencyDisplay() {
 }
 
 // Award currency after battle
+// Title/Achievement system
+const TITLE_KEY = 'playerTitle';
+const AI_WINS_KEY = 'aiWinsCount';
+const MASTER_TITLE = 'Master of Forts';
+const MASTER_WINS_REQUIRED = 20;
+
+function getAIWinsCount() {
+    try {
+        return parseInt(localStorage.getItem(AI_WINS_KEY) || '0');
+    } catch (error) {
+        console.error('[TITLE] Error loading AI wins:', error);
+        return 0;
+    }
+}
+
+function incrementAIWins() {
+    if (!game || !game.aiEnabled) {
+        return; // Only count wins against AI
+    }
+    
+    let wins = getAIWinsCount();
+    wins++;
+    localStorage.setItem(AI_WINS_KEY, wins.toString());
+    
+    console.log(`[TITLE] AI wins: ${wins}/${MASTER_WINS_REQUIRED}`);
+    
+    // Check if player earned the title
+    if (wins >= MASTER_WINS_REQUIRED) {
+        const currentTitle = localStorage.getItem(TITLE_KEY);
+        if (currentTitle !== MASTER_TITLE) {
+            localStorage.setItem(TITLE_KEY, MASTER_TITLE);
+            console.log(`[TITLE] 🏆 CONGRATULATIONS! You are now ${MASTER_TITLE}!`);
+            showTitleUnlocked(MASTER_TITLE);
+        }
+    }
+    
+    return wins;
+}
+
+function getPlayerTitle() {
+    try {
+        return localStorage.getItem(TITLE_KEY) || '';
+    } catch (error) {
+        return '';
+    }
+}
+
+function showTitleUnlocked(title) {
+    // Create a notification for title unlock
+    const notification = document.createElement('div');
+    notification.className = 'title-unlock-notification';
+    notification.innerHTML = `
+        <div class="title-unlock-content">
+            <div class="title-unlock-icon">🏆</div>
+            <div class="title-unlock-title">TITLE UNLOCKED!</div>
+            <div class="title-unlock-name">${title}</div>
+            <div class="title-unlock-message">You have proven yourself a true master!</div>
+        </div>
+    `;
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Remove after animation
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 500);
+    }, 4000);
+}
+
 function awardBattleCurrency(playerWon) {
     if (playerWon) {
         // Award gold for winning (random between 50-100)
@@ -60,6 +137,11 @@ function awardBattleCurrency(playerWon) {
         
         saveCurrency();
         updateCurrencyDisplay();
+        
+        // Track AI wins for title system
+        if (game && game.aiEnabled) {
+            incrementAIWins();
+        }
         
         console.log(`[CURRENCY] Awarded ${goldEarned} gold${playerCurrency.arcana > 0 ? ` and ${playerCurrency.arcana} arcana` : ''} for victory`);
     } else {
@@ -326,6 +408,18 @@ function updateUI() {
         const p1FortHP = document.getElementById('player1FortHP');
         p1FortHP.textContent = player1.fort.hp;
         p1FortHP.style.cursor = 'default';
+        
+        // Update player title
+        const player1Title = document.getElementById('player1Title');
+        if (player1Title) {
+            const title = getPlayerTitle();
+            if (title) {
+                player1Title.textContent = title;
+                player1Title.style.display = 'block';
+            } else {
+                player1Title.style.display = 'none';
+            }
+        }
         
         document.getElementById('player2Stars').textContent = player2.stars;
         const p2FortHP = document.getElementById('player2FortHP');

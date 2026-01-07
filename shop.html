@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Shop - Defend the Fort</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="pack-opening.css">
     <style>
         body {
             margin: 0;
@@ -37,6 +38,87 @@
             margin: 0;
             font-size: 2.5em;
             text-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+        }
+        
+        /* Admin Badge */
+        .admin-badge {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #ffd700 0%, #ff6b6b 100%);
+            color: #000;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            z-index: 10000;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+            animation: adminPulse 2s ease-in-out infinite;
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+        
+        @keyframes adminPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 6px 20px rgba(255, 215, 0, 0.8);
+            }
+        }
+        
+        .admin-panel {
+            position: fixed;
+            top: 60px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 10001;
+            min-width: 250px;
+            display: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        }
+        
+        .admin-panel.show {
+            display: block;
+        }
+        
+        .admin-panel h3 {
+            margin: 0 0 15px 0;
+            color: #ffd700;
+            text-align: center;
+        }
+        
+        .admin-btn {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .admin-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+        }
+        
+        .admin-input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            color: #fff;
         }
         
         .currency-display {
@@ -183,7 +265,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: radial-gradient(circle at center, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.95) 100%);
             z-index: 10000;
             justify-content: center;
             align-items: center;
@@ -199,10 +281,11 @@
             padding: 40px;
             border-radius: 20px;
             border: 3px solid rgba(255, 255, 255, 0.3);
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 95%;
+            max-height: 95%;
             overflow-y: auto;
             position: relative;
+            box-shadow: 0 0 50px rgba(102, 126, 234, 0.5);
         }
         
         .pack-opening-header {
@@ -215,6 +298,73 @@
             font-size: 2.5em;
             margin: 0;
             text-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.9;
+            }
+        }
+        
+        /* Pack animation before cards */
+        .pack-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 40px;
+            min-height: 300px;
+        }
+        
+        .pack-box {
+            width: 200px;
+            height: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: packShake 0.5s ease-in-out;
+            transform-style: preserve-3d;
+        }
+        
+        .pack-box::before {
+            content: '📦';
+            font-size: 80px;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
+        }
+        
+        .pack-box.opening {
+            animation: packOpen 1s ease-out forwards;
+        }
+        
+        @keyframes packShake {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-5deg) scale(1.05); }
+            75% { transform: rotate(5deg) scale(1.05); }
+        }
+        
+        @keyframes packOpen {
+            0% {
+                transform: scale(1) rotateY(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2) rotateY(180deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(0) rotateY(360deg);
+                opacity: 0;
+            }
         }
         
         .pack-cards-container {
@@ -227,49 +377,142 @@
         }
         
         .pack-card-item {
-            width: 140px;
-            height: 200px;
+            width: 160px;
+            height: 220px;
             position: relative;
             border-radius: 12px;
             overflow: hidden;
-            background: rgba(0, 0, 0, 0.8);
-            transform: scale(0);
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(0) rotateY(180deg);
             opacity: 0;
-            transition: all 0.6s ease-out;
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        
+        .pack-card-item.revealing {
+            animation: cardFlipReveal 0.8s ease-out forwards;
         }
         
         .pack-card-item.revealed {
-            transform: scale(1);
+            transform: scale(1) rotateY(0deg);
             opacity: 1;
-            animation: cardShine 1s ease-out;
+            animation: cardGlow 2s ease-in-out infinite;
         }
         
-        @keyframes cardShine {
-            0%, 100% {
-                filter: brightness(1);
+        @keyframes cardFlipReveal {
+            0% {
+                transform: scale(0) rotateY(180deg);
+                opacity: 0;
             }
             50% {
-                filter: brightness(1.8);
+                transform: scale(1.2) rotateY(90deg);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(1) rotateY(0deg);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes cardGlow {
+            0%, 100% {
+                filter: brightness(1) drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
+            }
+            50% {
+                filter: brightness(1.3) drop-shadow(0 0 20px rgba(102, 126, 234, 0.8));
+            }
+        }
+        
+        /* Shine effect */
+        .pack-card-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.6),
+                transparent
+            );
+            animation: shineSweep 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes shineSweep {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+        
+        /* Particle effects */
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, #ffd700, transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFloat 2s ease-out forwards;
+        }
+        
+        @keyframes particleFloat {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0);
             }
         }
         
         .pack-card-item[data-rarity="legendary"] {
-            border: 3px solid #ffd700;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+            border: 4px solid #ffd700;
+            box-shadow: 
+                0 0 30px rgba(255, 215, 0, 0.8),
+                0 0 60px rgba(255, 215, 0, 0.4),
+                inset 0 0 20px rgba(255, 215, 0, 0.2);
+            animation: legendaryGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes legendaryGlow {
+            0%, 100% {
+                box-shadow: 
+                    0 0 30px rgba(255, 215, 0, 0.8),
+                    0 0 60px rgba(255, 215, 0, 0.4),
+                    inset 0 0 20px rgba(255, 215, 0, 0.2);
+            }
+            50% {
+                box-shadow: 
+                    0 0 50px rgba(255, 215, 0, 1),
+                    0 0 100px rgba(255, 215, 0, 0.6),
+                    inset 0 0 30px rgba(255, 215, 0, 0.4);
+            }
         }
         
         .pack-card-item[data-rarity="epic"] {
-            border: 3px solid #9b59b6;
-            box-shadow: 0 0 20px rgba(155, 89, 182, 0.6);
+            border: 4px solid #9b59b6;
+            box-shadow: 
+                0 0 25px rgba(155, 89, 182, 0.7),
+                0 0 50px rgba(155, 89, 182, 0.3);
         }
         
         .pack-card-item[data-rarity="rare"] {
             border: 3px solid #3498db;
-            box-shadow: 0 0 20px rgba(52, 152, 219, 0.6);
+            box-shadow: 
+                0 0 20px rgba(52, 152, 219, 0.6),
+                0 0 40px rgba(52, 152, 219, 0.2);
         }
         
         .pack-card-item[data-rarity="common"] {
-            border: 3px solid #95a5a6;
+            border: 2px solid #95a5a6;
             box-shadow: 0 0 10px rgba(149, 165, 166, 0.4);
         }
         
@@ -323,6 +566,61 @@
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
         }
         
+        .pack-examples {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .pack-examples-label {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .pack-examples-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .example-card {
+            display: inline-block;
+            padding: 5px 10px;
+            background: rgba(102, 126, 234, 0.3);
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            border-radius: 5px;
+            font-size: 0.85em;
+            color: #fff;
+            text-align: center;
+            min-width: 80px;
+        }
+        
+        .example-card.common {
+            background: rgba(158, 158, 158, 0.3);
+            border-color: rgba(158, 158, 158, 0.5);
+        }
+        
+        .example-card.rare {
+            background: rgba(33, 150, 243, 0.3);
+            border-color: rgba(33, 150, 243, 0.5);
+        }
+        
+        .example-card.epic {
+            background: rgba(156, 39, 176, 0.3);
+            border-color: rgba(156, 39, 176, 0.5);
+        }
+        
+        .example-card.legendary {
+            background: rgba(255, 215, 0, 0.3);
+            border-color: rgba(255, 215, 0, 0.5);
+            color: #ffd700;
+        }
+        
         @media (max-width: 768px) {
             .shop-header {
                 flex-direction: column;
@@ -336,10 +634,40 @@
             .pack-opening-content {
                 padding: 20px;
             }
+            
+            .pack-examples-cards {
+                gap: 5px;
+            }
+            
+            .example-card {
+                font-size: 0.75em;
+                padding: 4px 8px;
+                min-width: 70px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Admin Badge (only shows if admin mode is active) -->
+    <div class="admin-badge" id="adminBadge" style="display: none;" onclick="toggleAdminPanel()">
+        👑 ADMIN MODE
+    </div>
+    
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="adminPanel">
+        <h3>👑 Admin Panel</h3>
+        <input type="password" class="admin-input" id="adminKeyInput" placeholder="Enter admin key...">
+        <button class="admin-btn" onclick="activateAdmin()">Activate Admin Mode</button>
+        <button class="admin-btn" onclick="giveAdminPacks()">Give 5 Free Packs</button>
+        <button class="admin-btn" onclick="giveAdminPacks(10)">Give 10 Free Packs</button>
+        <button class="admin-btn" onclick="giveAdminPacks(20)">Give 20 Free Packs</button>
+        <hr style="border-color: rgba(255,255,255,0.2); margin: 15px 0;">
+        <button class="admin-btn" onclick="giveAdminArcana(500)">Give 500 ✨ Arcana</button>
+        <button class="admin-btn" onclick="giveAdminArcana(1000)">Give 1000 ✨ Arcana</button>
+        <button class="admin-btn" onclick="giveAdminArcana(5000)">Give 5000 ✨ Arcana</button>
+        <button class="admin-btn" onclick="toggleAdminPanel()">Close</button>
+    </div>
+    
     <div class="shop-page">
         <div class="shop-header">
             <h1>🛒 Card Shop</h1>
@@ -362,10 +690,32 @@
         <div class="packs-container">
             <div class="pack-card">
                 <h3>📦 Starter Pack</h3>
-                <p>Contains 5 random cards</p>
-                <p style="font-size: 0.9em; color: rgba(255,255,255,0.6);">
-                    60% Common • 30% Rare • 8% Epic • 2% Legendary
-                </p>
+                <p>Perfect for beginners! Contains 5 random cards with balanced rarities.</p>
+                <div class="pack-rarity-info">
+                    <div class="rarity-item">
+                        <span class="rarity-dot common"></span>
+                        <span>60% Common</span>
+                    </div>
+                    <div class="rarity-item">
+                        <span class="rarity-dot rare"></span>
+                        <span>30% Rare</span>
+                    </div>
+                    <div class="rarity-item">
+                        <span class="rarity-dot epic"></span>
+                        <span>8% Epic</span>
+                    </div>
+                    <div class="rarity-item">
+                        <span class="rarity-dot legendary"></span>
+                        <span>2% Legendary</span>
+                    </div>
+                </div>
+                <div class="pack-difference">
+                    <strong>Best for:</strong> New players, building your collection
+                </div>
+                <div class="pack-examples" id="starterPackExamples">
+                    <div class="pack-examples-label">Example cards you might get:</div>
+                    <div class="pack-examples-cards" id="starterExamplesList"></div>
+                </div>
                 <div class="pack-cost">Cost: 100 ✨ Arcana</div>
                 <button class="buy-pack-btn" data-pack-type="starter" id="starterPackBtn">
                     Buy Pack
@@ -374,14 +724,61 @@
             
             <div class="pack-card">
                 <h3>💎 Premium Pack</h3>
-                <p>Contains 5 random cards</p>
-                <p style="font-size: 0.9em; color: rgba(255,255,255,0.6);">
-                    40% Common • 40% Rare • 15% Epic • 5% Legendary
-                </p>
+                <p>Higher chance of rare cards! Contains 5 random cards with better odds.</p>
+                <div class="pack-rarity-info">
+                    <div class="rarity-item">
+                        <span class="rarity-dot common"></span>
+                        <span>30% Common</span>
+                    </div>
+                    <div class="rarity-item">
+                        <span class="rarity-dot rare"></span>
+                        <span>40% Rare</span>
+                    </div>
+                    <div class="rarity-item">
+                        <span class="rarity-dot epic"></span>
+                        <span>25% Epic</span>
+                    </div>
+                    <div class="rarity-item">
+                        <span class="rarity-dot legendary"></span>
+                        <span>5% Legendary</span>
+                    </div>
+                </div>
+                <div class="pack-difference">
+                    <strong>Best for:</strong> Advanced players, hunting rare cards
+                </div>
+                <div class="pack-examples" id="premiumPackExamples">
+                    <div class="pack-examples-label">Example cards you might get:</div>
+                    <div class="pack-examples-cards" id="premiumExamplesList"></div>
+                </div>
                 <div class="pack-cost">Cost: 200 ✨ Arcana</div>
                 <button class="buy-pack-btn" data-pack-type="premium" id="premiumPackBtn">
                     Buy Pack
                 </button>
+            </div>
+        </div>
+        
+        <!-- Pack Comparison Section -->
+        <div class="pack-comparison">
+            <h2>📊 Pack Comparison</h2>
+            <div class="comparison-content">
+                <div class="comparison-item">
+                    <h3>📦 Starter Pack</h3>
+                    <ul>
+                        <li>✅ More affordable (100 Arcana)</li>
+                        <li>✅ Great for building your collection</li>
+                        <li>✅ Higher chance of common cards</li>
+                        <li>⚠️ Lower chance of epic/legendary</li>
+                    </ul>
+                </div>
+                <div class="comparison-item">
+                    <h3>💎 Premium Pack</h3>
+                    <ul>
+                        <li>✅ 2.5x better legendary odds (5% vs 2%)</li>
+                        <li>✅ 3x better epic odds (25% vs 8%)</li>
+                        <li>✅ More rare cards overall</li>
+                        <li>⚠️ Costs more (200 Arcana)</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -403,7 +800,7 @@
     
     <script src="js/cards.js"></script>
     <script src="js/deck.js"></script>
-    <script src="js/shop.js"></script>
+    <script src="js/shop-enhanced.js"></script>
     <script>
         // Simple, clean button handler
         function setupShop() {
@@ -432,6 +829,90 @@
             
             // Setup button handlers
             setupButtons();
+            
+            // Show example cards for each pack
+            setTimeout(showPackExamples, 500);
+        }
+        
+        function showPackExamples() {
+            const cardDB = (typeof CARD_DATABASE !== 'undefined') ? CARD_DATABASE : 
+                          (typeof window !== 'undefined' && window.CARD_DATABASE) ? window.CARD_DATABASE : {};
+            
+            if (Object.keys(cardDB).length === 0) {
+                console.warn('[SHOP] Card database not loaded yet, retrying...');
+                setTimeout(showPackExamples, 500);
+                return;
+            }
+            
+            // Get cards by rarity
+            const cardsByRarity = {
+                common: [],
+                rare: [],
+                epic: [],
+                legendary: []
+            };
+            
+            Object.keys(cardDB).forEach(cardId => {
+                const card = cardDB[cardId];
+                if (!card) return;
+                
+                // Determine rarity based on cost (same logic as getCardRarity)
+                let rarity = 'common';
+                if (card.cost >= 6) rarity = 'legendary';
+                else if (card.cost >= 4) rarity = 'epic';
+                else if (card.cost >= 2) rarity = 'rare';
+                
+                cardsByRarity[rarity].push(card.name);
+            });
+            
+            // Show starter pack examples (mostly common/rare)
+            const starterExamples = [
+                ...cardsByRarity.common.slice(0, 2),
+                ...cardsByRarity.rare.slice(0, 2),
+                ...cardsByRarity.epic.slice(0, 1)
+            ];
+            
+            // Show premium pack examples (more rare/epic)
+            const premiumExamples = [
+                ...cardsByRarity.rare.slice(0, 2),
+                ...cardsByRarity.epic.slice(0, 2),
+                ...cardsByRarity.legendary.slice(0, 1)
+            ];
+            
+            displayExampleCards('starterExamplesList', starterExamples, cardDB);
+            displayExampleCards('premiumExamplesList', premiumExamples, cardDB);
+        }
+        
+        function displayExampleCards(containerId, cardNames, cardDB) {
+            const container = document.getElementById(containerId);
+            if (!container) {
+                console.warn('[SHOP] Container not found:', containerId);
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            cardNames.forEach(cardName => {
+                if (!cardName) return;
+                
+                // Find card by name
+                const cardEntry = Object.entries(cardDB).find(([id, card]) => card.name === cardName);
+                if (!cardEntry) return;
+                
+                const [cardId, card] = cardEntry;
+                
+                // Determine rarity
+                let rarity = 'common';
+                if (card.cost >= 6) rarity = 'legendary';
+                else if (card.cost >= 4) rarity = 'epic';
+                else if (card.cost >= 2) rarity = 'rare';
+                
+                const exampleCard = document.createElement('div');
+                exampleCard.className = `example-card ${rarity}`;
+                exampleCard.textContent = card.name;
+                exampleCard.title = `${card.name} (${rarity})`;
+                container.appendChild(exampleCard);
+            });
         }
         
         function setupButtons() {
@@ -488,10 +969,94 @@
             }
         }
         
+        // Admin functions
+        function activateAdmin() {
+            const keyInput = document.getElementById('adminKeyInput');
+            const key = keyInput.value;
+            
+            if (typeof window.activateAdminMode === 'function') {
+                if (window.activateAdminMode(key)) {
+                    alert('✅ Admin mode activated!');
+                    checkAdminMode();
+                    toggleAdminPanel();
+                    keyInput.value = '';
+                } else {
+                    alert('❌ Invalid admin key!');
+                }
+            } else {
+                alert('Admin system not loaded yet. Please refresh the page.');
+            }
+        }
+        
+        function giveAdminPacks(amount = 5) {
+            if (typeof window.giveAdminFreePacks === 'function') {
+                if (window.giveAdminFreePacks(amount)) {
+                    alert(`✅ Gave ${amount} free packs!`);
+                    if (typeof updateShopUI === 'function') {
+                        updateShopUI();
+                    } else if (typeof window.updateShopUI === 'function') {
+                        window.updateShopUI();
+                    }
+                } else {
+                    alert('❌ Admin mode not activated! Enter the admin key first.');
+                }
+            } else {
+                alert('Admin system not loaded yet. Please refresh the page.');
+            }
+        }
+        
+        function giveAdminArcana(amount = 1000) {
+            if (typeof window.giveAdminArcana === 'function') {
+                if (window.giveAdminArcana(amount)) {
+                    alert(`✅ Gave ${amount} ✨ Arcana!`);
+                    if (typeof updateShopUI === 'function') {
+                        updateShopUI();
+                    } else if (typeof window.updateShopUI === 'function') {
+                        window.updateShopUI();
+                    }
+                } else {
+                    alert('❌ Admin mode not activated! Enter the admin key first.');
+                }
+            } else {
+                alert('Admin system not loaded yet. Please refresh the page.');
+            }
+        }
+        
+        function checkAdminMode() {
+            // Check after a delay to ensure shop-enhanced.js is loaded
+            setTimeout(() => {
+                if (typeof window.isAdmin === 'function' && window.isAdmin()) {
+                    const adminBadge = document.getElementById('adminBadge');
+                    if (adminBadge) {
+                        adminBadge.style.display = 'block';
+                        console.log('[ADMIN] Admin badge displayed!');
+                    }
+                } else {
+                    // Show admin panel button even if not activated (for first-time activation)
+                    const adminBadge = document.getElementById('adminBadge');
+                    if (adminBadge) {
+                        adminBadge.style.display = 'block';
+                        adminBadge.textContent = '🔑 Activate Admin';
+                        adminBadge.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    }
+                }
+            }, 500);
+        }
+        
+        function toggleAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            if (panel) {
+                panel.classList.toggle('show');
+            }
+        }
+        
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('[SHOP] DOMContentLoaded fired');
             setTimeout(setupShop, 100);
+            
+            // Check admin mode after a delay
+            setTimeout(checkAdminMode, 500);
         });
         
         // Also try after a delay in case scripts load slowly
@@ -500,6 +1065,7 @@
                 console.warn('[SHOP] Shop scripts not loaded yet, retrying...');
                 setTimeout(setupShop, 500);
             }
+            checkAdminMode();
         }, 1000);
     </script>
 </body>
