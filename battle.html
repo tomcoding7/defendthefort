@@ -43,20 +43,39 @@
                 margin: 5px 0;
             }
             
+            .bottom-panel {
+                position: relative !important;
+                z-index: 1000 !important;
+                width: 100% !important;
+                min-height: 200px !important;
+                background: rgba(0, 0, 0, 0.9) !important;
+                border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            }
+            
             .hand-container {
-                max-height: 200px;
+                max-height: none !important;
+                height: auto !important;
+                min-height: 150px !important;
                 overflow-x: auto;
-                overflow-y: hidden;
+                overflow-y: visible !important;
                 -webkit-overflow-scrolling: touch;
+                width: 100% !important;
+                display: block !important;
+                visibility: visible !important;
             }
             
             .hand {
                 min-width: max-content;
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                min-height: 120px !important;
             }
             
             .hand-card {
                 min-width: 80px;
                 transform: scale(0.8);
+                flex-shrink: 0 !important;
             }
             
             .monster-card {

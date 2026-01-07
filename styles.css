@@ -3057,13 +3057,25 @@ body::after {
     
     /* Ensure hand is visible and not covered */
     .bottom-panel {
-        position: relative;
-        z-index: 10;
-        margin-top: 10px;
+        position: relative !important;
+        z-index: 100 !important; /* Very high z-index */
+        margin-top: 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
     
     .hand-container {
-        z-index: 10;
+        z-index: 101 !important;
+        width: 100% !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    .hand {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
     
     /* Reduce padding on mobile since icons are smaller */
@@ -3192,31 +3204,58 @@ body::after {
     }
 
     .bottom-panel {
-        flex-direction: row;
-        padding: 8px;
-        gap: 8px;
-        margin-top: 5px;
-        max-height: 35vh; /* Limit height */
+        flex-direction: column !important; /* Stack vertically on mobile */
+        padding: 10px !important;
+        gap: 10px !important;
+        margin-top: 10px !important;
+        max-height: none !important; /* Remove height limit */
+        min-height: 200px !important; /* Ensure minimum height */
+        position: relative !important;
+        z-index: 100 !important; /* High z-index to ensure visibility */
+        background: rgba(0, 0, 0, 0.8) !important; /* More visible background */
+        border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        flex-shrink: 0 !important; /* Don't shrink */
     }
     
     .hand-container {
         flex: 1;
         min-width: 0; /* Allow shrinking */
+        width: 100% !important;
+        order: 1; /* Show hand first */
+        z-index: 101 !important;
+    }
+    
+    .action-panel {
+        order: 2; /* Show action buttons second */
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
     }
     
     .hand-label {
-        font-size: 0.85em;
-        margin-bottom: 5px;
+        font-size: 0.9em !important;
+        margin-bottom: 8px !important;
+        color: #fff !important;
+        font-weight: bold !important;
+        display: block !important;
+        visibility: visible !important;
     }
 
     .hand {
-        min-height: 100px;
-        max-height: 120px;
-        padding: 5px;
-        gap: 5px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        flex-wrap: nowrap; /* Horizontal scroll on mobile */
+        min-height: 140px !important; /* Increased minimum height */
+        max-height: none !important; /* Remove max height restriction */
+        padding: 8px !important;
+        gap: 8px !important;
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        flex-wrap: nowrap !important; /* Horizontal scroll on mobile */
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 100% !important;
+        background: rgba(0, 0, 0, 0.4) !important;
+        border-radius: 8px !important;
     }
     
     .hand-card {
