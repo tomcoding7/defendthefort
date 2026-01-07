@@ -174,6 +174,13 @@ function initializeGame(aiEnabled = false) {
             window.ai = null;
         }
         
+        // Start battle music
+        if (typeof switchToBattleMusic === 'function') {
+            switchToBattleMusic();
+        } else if (typeof window !== 'undefined' && typeof window.switchToBattleMusic === 'function') {
+            window.switchToBattleMusic();
+        }
+        
         updateUI();
         setupEventListeners();
     } catch (error) {

@@ -32,11 +32,12 @@ const PACK_TYPES = {
 
 // Sound system
 const SOUNDS = {
-    cardFlip: 'assets/sounds/card-flip.mp3',
-    rare: 'assets/sounds/rare.mp3',
-    epic: 'assets/sounds/epic.mp3',
-    legendary: 'assets/sounds/legendary.mp3',
-    packOpen: 'assets/sounds/pack-open.mp3'
+    cardFlip: 'assets/soundeffects/packopening/packopening1.wav',
+    rare: 'assets/soundeffects/packopening/packopening2.wav',
+    epic: 'assets/soundeffects/packopening/superrare.wav',
+    legendary: 'assets/soundeffects/packopening/ultrarare.wav',
+    legendary2: 'assets/soundeffects/packopening/ultrarare2.wav',
+    packOpen: 'assets/soundeffects/packopening/packopening1.wav'
 };
 
 function playSound(soundName) {
@@ -393,9 +394,12 @@ function showEnhancedPackOpening(cards) {
                 newCardBack.replaceWith(revealedCard);
                 
                 if (cardData.rarity === 'legendary') {
-                    playSound('legendary');
+                    // Play ultra rare sound for legendary cards (randomly choose between the two)
+                    const ultraRareSound = Math.random() < 0.5 ? 'legendary' : 'legendary2';
+                    playSound(ultraRareSound);
                     triggerLegendaryEffect(revealedCard);
                 } else if (cardData.rarity === 'epic') {
+                    // Play super rare sound for epic cards
                     playSound('epic');
                     triggerEpicEffect(revealedCard);
                 } else if (cardData.rarity === 'rare') {
