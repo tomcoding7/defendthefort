@@ -158,6 +158,110 @@
     animation: epicPulse 2s ease-in-out infinite;
 }
 
+/* Rarity Label */
+.card-rarity-label {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card-rarity-label[data-rarity="common"] {
+    background: rgba(158, 158, 158, 0.9);
+    color: #fff;
+}
+
+.card-rarity-label[data-rarity="rare"] {
+    background: rgba(33, 150, 243, 0.9);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(33, 150, 243, 0.6);
+}
+
+.card-rarity-label[data-rarity="epic"] {
+    background: rgba(156, 39, 176, 0.9);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(156, 39, 176, 0.6);
+}
+
+.card-rarity-label[data-rarity="legendary"] {
+    background: rgba(255, 215, 0, 0.9);
+    color: #000;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+}
+
+/* Glossy Card Effect */
+.glossy-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.glossy-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 70%
+    );
+    transform: rotate(45deg);
+    animation: glossyShine 3s ease-in-out infinite;
+    z-index: 5;
+    pointer-events: none;
+}
+
+@keyframes glossyShine {
+    0%, 100% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    50% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+/* Glossy Badge */
+.card-glossy-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    color: #000;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 10;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    animation: glossyPulse 2s ease-in-out infinite;
+}
+
+@keyframes glossyPulse {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 1);
+        transform: scale(1.05);
+    }
+}
+
 /* Fallback Card Content */
 .pack-card-content {
     width: 100%;

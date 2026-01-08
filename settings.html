@@ -89,6 +89,36 @@
         </div>
         
         <div class="settings-content">
+            <!-- Firebase Cloud Save Section -->
+            <div class="settings-section" id="firebaseSection">
+                <h3>☁️ Cloud Save</h3>
+                <div id="firebaseAuthStatus">
+                    <p id="authStatusText">Not signed in</p>
+                    <div id="firebaseAuthButtons" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                        <button class="btn btn-primary" id="signInBtn" style="display: none;">Sign In</button>
+                        <button class="btn btn-primary" id="signUpBtn" style="display: none;">Sign Up</button>
+                        <button class="btn btn-primary" id="signOutBtn" style="display: none;">Sign Out</button>
+                        <button class="btn btn-primary" id="googleSignInBtn" style="display: none;">Sign In with Google</button>
+                    </div>
+                    <div id="firebaseSyncButtons" style="display: none; margin-top: 15px; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-primary" id="syncToCloudBtn">💾 Save to Cloud</button>
+                        <button class="btn btn-primary" id="syncFromCloudBtn">⬇️ Load from Cloud</button>
+                    </div>
+                </div>
+                
+                <!-- Sign In/Up Form (hidden by default) -->
+                <div id="firebaseAuthForm" style="display: none; margin-top: 15px;">
+                    <input type="email" id="authEmail" placeholder="Email" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.3); color: #fff;">
+                    <input type="password" id="authPassword" placeholder="Password" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.3); color: #fff;">
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" id="submitSignInBtn">Sign In</button>
+                        <button class="btn btn-primary" id="submitSignUpBtn">Sign Up</button>
+                        <button class="btn" id="cancelAuthBtn" style="background: rgba(255,255,255,0.2);">Cancel</button>
+                    </div>
+                    <p id="authError" style="color: #ff6b6b; margin-top: 10px; display: none;"></p>
+                </div>
+            </div>
+            
             <div class="settings-section">
                 <h3>🎵 Music Controls</h3>
                 <div class="music-controls" id="musicControls">
@@ -114,13 +144,35 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    
+    <!-- Firebase Configuration and Setup -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-save.js"></script>
+    
     <!-- Scripts -->
     <script src="js/music.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/firebase-ui.js"></script>
     <script>
         // Initialize settings page
         document.addEventListener('DOMContentLoaded', () => {
             console.log('[SETTINGS PAGE] Initializing...');
+            
+            // Initialize Firebase
+            setTimeout(() => {
+                if (typeof initializeFirebase === 'function') {
+                    initializeFirebase();
+                }
+                // Setup Firebase UI
+                if (typeof setupFirebaseUI === 'function') {
+                    setupFirebaseUI();
+                }
+            }, 500);
             
             // Setup music controls
             if (typeof setupMusicControls === 'function') {

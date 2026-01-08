@@ -2,6 +2,47 @@
 let currentDeck = [];
 let deckStudioInitialized = false;
 
+// Helper functions for rarity and glossy (use from shop-enhanced.js if available, otherwise define here)
+function getRarityDisplayNameDeck(rarity) {
+    if (typeof window !== 'undefined' && typeof window.getRarityDisplayName === 'function') {
+        return window.getRarityDisplayName(rarity);
+    }
+    const rarityMap = {
+        'common': 'Common',
+        'rare': 'Rare',
+        'epic': 'Super Rare',
+        'legendary': 'Ultra Rare'
+    };
+    return rarityMap[rarity] || 'Common';
+}
+
+function getCardRarityDeck(cardId) {
+    if (typeof window !== 'undefined' && typeof window.getCardRarity === 'function') {
+        return window.getCardRarity(cardId);
+    }
+    const cardDB = (typeof CARD_DATABASE !== 'undefined') ? CARD_DATABASE : 
+                   (typeof window !== 'undefined' && window.CARD_DATABASE) ? window.CARD_DATABASE : {};
+    const card = cardDB[cardId];
+    if (!card) return 'common';
+    
+    if (card.cost >= 6) return 'legendary';
+    if (card.cost >= 4) return 'epic';
+    if (card.cost >= 2) return 'rare';
+    return 'common';
+}
+
+function isCardGlossyDeck(cardId) {
+    if (typeof window !== 'undefined' && typeof window.isCardGlossy === 'function') {
+        return window.isCardGlossy(cardId);
+    }
+    try {
+        const glossyCards = JSON.parse(localStorage.getItem('glossyCards') || '{}');
+        return glossyCards[cardId] === true;
+    } catch (e) {
+        return false;
+    }
+}
+
 // Initialize deck studio
 function initDeckStudio() {
     if (deckStudioInitialized) return;
@@ -429,6 +470,54 @@ function createCardBrowserCard(cardData) {
                 cardElement.appendChild(maxBadge);
             }
             
+            // Add rarity and glossy indicators
+            const rarity = getCardRarityDeck(cardData.id);
+            const isGlossy = isCardGlossyDeck(cardData.id);
+            
+            // Add rarity badge (position at top-left, but below remove button if present)
+            const rarityBadge = document.createElement('div');
+            rarityBadge.className = 'deck-card-rarity-label';
+            rarityBadge.textContent = getRarityDisplayNameDeck(rarity);
+            rarityBadge.dataset.rarity = rarity;
+            rarityBadge.style.position = 'absolute';
+            rarityBadge.style.top = count > 0 ? '30px' : '5px'; // Move down if remove button exists
+            rarityBadge.style.left = '5px';
+            rarityBadge.style.background = rarity === 'common' ? 'rgba(158, 158, 158, 0.9)' :
+                                          rarity === 'rare' ? 'rgba(33, 150, 243, 0.9)' :
+                                          rarity === 'epic' ? 'rgba(156, 39, 176, 0.9)' :
+                                          'rgba(255, 215, 0, 0.9)';
+            rarityBadge.style.color = rarity === 'legendary' ? '#000' : '#fff';
+            rarityBadge.style.padding = '3px 6px';
+            rarityBadge.style.borderRadius = '4px';
+            rarityBadge.style.fontSize = '9px';
+            rarityBadge.style.fontWeight = 'bold';
+            rarityBadge.style.textTransform = 'uppercase';
+            rarityBadge.style.letterSpacing = '0.5px';
+            rarityBadge.style.zIndex = '15';
+            rarityBadge.style.boxShadow = rarity !== 'common' ? '0 0 8px rgba(0,0,0,0.5)' : 'none';
+            cardElement.appendChild(rarityBadge);
+            
+            // Add glossy badge if card is glossy (position at top-right, but adjust if count badge exists)
+            if (isGlossy) {
+                cardElement.classList.add('glossy-card');
+                const glossyBadge = document.createElement('div');
+                glossyBadge.className = 'deck-card-glossy-badge';
+                glossyBadge.textContent = '✨';
+                glossyBadge.style.position = 'absolute';
+                glossyBadge.style.top = count > 0 ? '30px' : '5px'; // Move down if count badge exists
+                glossyBadge.style.right = '5px';
+                glossyBadge.style.background = 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)';
+                glossyBadge.style.color = '#000';
+                glossyBadge.style.padding = '3px 6px';
+                glossyBadge.style.borderRadius = '4px';
+                glossyBadge.style.fontSize = '10px';
+                glossyBadge.style.fontWeight = 'bold';
+                glossyBadge.style.zIndex = '15';
+                glossyBadge.style.boxShadow = '0 0 8px rgba(255, 215, 0, 0.8)';
+                glossyBadge.title = 'Glossy';
+                cardElement.appendChild(glossyBadge);
+            }
+            
             card.appendChild(cardElement);
         } else {
             console.warn('[DECK STUDIO] Card object created but no createElement method:', cardData.id);
@@ -711,6 +800,54 @@ function createDeckCardElement(cardData, count) {
         countDisplay.className = 'deck-card-count';
         countDisplay.textContent = `x${count}/3`;
         cardElement.appendChild(countDisplay);
+        
+        // Add rarity and glossy indicators
+        const rarity = getCardRarityDeck(cardData.id);
+        const isGlossy = isCardGlossyDeck(cardData.id);
+        
+        // Add rarity badge (position at top-left, but below remove button if present)
+        const rarityBadge = document.createElement('div');
+        rarityBadge.className = 'deck-card-rarity-label';
+        rarityBadge.textContent = getRarityDisplayNameDeck(rarity);
+        rarityBadge.dataset.rarity = rarity;
+        rarityBadge.style.position = 'absolute';
+        rarityBadge.style.top = '30px'; // Below remove button
+        rarityBadge.style.left = '5px';
+        rarityBadge.style.background = rarity === 'common' ? 'rgba(158, 158, 158, 0.9)' :
+                                      rarity === 'rare' ? 'rgba(33, 150, 243, 0.9)' :
+                                      rarity === 'epic' ? 'rgba(156, 39, 176, 0.9)' :
+                                      'rgba(255, 215, 0, 0.9)';
+        rarityBadge.style.color = rarity === 'legendary' ? '#000' : '#fff';
+        rarityBadge.style.padding = '3px 6px';
+        rarityBadge.style.borderRadius = '4px';
+        rarityBadge.style.fontSize = '9px';
+        rarityBadge.style.fontWeight = 'bold';
+        rarityBadge.style.textTransform = 'uppercase';
+        rarityBadge.style.letterSpacing = '0.5px';
+        rarityBadge.style.zIndex = '15';
+        rarityBadge.style.boxShadow = rarity !== 'common' ? '0 0 8px rgba(0,0,0,0.5)' : 'none';
+        cardElement.appendChild(rarityBadge);
+        
+        // Add glossy badge if card is glossy (position at top-right, but adjust if count badge exists)
+        if (isGlossy) {
+            cardElement.classList.add('glossy-card');
+            const glossyBadge = document.createElement('div');
+            glossyBadge.className = 'deck-card-glossy-badge';
+            glossyBadge.textContent = '✨';
+            glossyBadge.style.position = 'absolute';
+            glossyBadge.style.top = '30px'; // Below count badge
+            glossyBadge.style.right = '5px';
+            glossyBadge.style.background = 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)';
+            glossyBadge.style.color = '#000';
+            glossyBadge.style.padding = '3px 6px';
+            glossyBadge.style.borderRadius = '4px';
+            glossyBadge.style.fontSize = '10px';
+            glossyBadge.style.fontWeight = 'bold';
+            glossyBadge.style.zIndex = '15';
+            glossyBadge.style.boxShadow = '0 0 8px rgba(255, 215, 0, 0.8)';
+            glossyBadge.title = 'Glossy';
+            cardElement.appendChild(glossyBadge);
+        }
         
         // Add remove buttons for each instance
         const removeContainer = document.createElement('div');

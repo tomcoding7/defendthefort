@@ -83,6 +83,11 @@ class Trap {
         
         this.activated = true;
         
+        // Play effect sound when trap activates
+        if (typeof window !== 'undefined' && typeof window.playRandomEffectSound === 'function') {
+            window.playRandomEffectSound(0.6);
+        }
+        
         switch (this.effect) {
             case 'reflect_damage':
                 // Reflect 50% damage back to attacker

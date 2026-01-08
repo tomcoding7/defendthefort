@@ -1025,6 +1025,26 @@
         function checkAdminMode() {
             // Check after a delay to ensure shop-enhanced.js is loaded
             setTimeout(() => {
+                // Check if admin secret is present using the function from shop-enhanced.js
+                // This ensures we use the same secret value defined in shop-enhanced.js
+                let hasSecret = false;
+                if (typeof window.hasAdminSecret === 'function') {
+                    hasSecret = window.hasAdminSecret();
+                } else {
+                    // Fallback: check URL parameter directly (will be set by shop-enhanced.js)
+                    const urlParams = new URLSearchParams(window.location.search);
+                    hasSecret = urlParams.get('admin') !== null; // Basic check, but shop-enhanced.js will validate
+                }
+                
+                if (!hasSecret) {
+                    // Hide admin UI completely if secret parameter is not present
+                    const adminBadge = document.getElementById('adminBadge');
+                    const adminPanel = document.getElementById('adminPanel');
+                    if (adminBadge) adminBadge.style.display = 'none';
+                    if (adminPanel) adminPanel.style.display = 'none';
+                    return;
+                }
+                
                 if (typeof window.isAdmin === 'function' && window.isAdmin()) {
                     const adminBadge = document.getElementById('adminBadge');
                     if (adminBadge) {

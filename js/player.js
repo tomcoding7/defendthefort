@@ -126,6 +126,11 @@ class Player {
         monster.owner = this;
         this.monsterField[slotIndex] = monster;
         
+        // Play summon sound
+        if (typeof window !== 'undefined' && typeof window.playRandomSummonSound === 'function') {
+            window.playRandomSummonSound(0.6);
+        }
+        
         // Remove card from hand
         const handIndex = this.hand.findIndex(c => c.id === card.id);
         if (handIndex !== -1) {

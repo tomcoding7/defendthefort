@@ -104,6 +104,11 @@ class Game {
             return { success: false, message: 'Invalid target' };
         }
         
+        // Play attack sound
+        if (typeof window !== 'undefined' && typeof window.playRandomAttackSound === 'function') {
+            window.playRandomAttackSound(0.7);
+        }
+        
         // Trigger battle animation
         if (window.animateBattle) {
             window.animateBattle(attackerPlayer.id === 'player1' ? 'player1' : 'player2', attackerSlot, 
@@ -199,6 +204,18 @@ class Game {
         // Check if target has alive monsters (unless attacker has direct_fort_attack ability)
         if (targetPlayer.hasAliveMonsters() && !attacker.abilities.includes('direct_fort_attack')) {
             return { success: false, message: 'Cannot attack fort while opponent has monsters' };
+        }
+        
+        // Play effect sound if monster has direct_fort_attack ability
+        if (attacker.abilities.includes('direct_fort_attack')) {
+            if (typeof window !== 'undefined' && typeof window.playRandomEffectSound === 'function') {
+                window.playRandomEffectSound(0.6);
+            }
+        }
+        
+        // Play attack sound
+        if (typeof window !== 'undefined' && typeof window.playRandomAttackSound === 'function') {
+            window.playRandomAttackSound(0.7);
         }
         
         // Animate fort attack

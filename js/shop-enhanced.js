@@ -63,6 +63,46 @@ function getCardRarity(cardId) {
     return 'common';
 }
 
+// Get display name for rarity (for UI labels)
+function getRarityDisplayName(rarity) {
+    const rarityMap = {
+        'common': 'Common',
+        'rare': 'Rare',
+        'epic': 'Super Rare',
+        'legendary': 'Ultra Rare'
+    };
+    return rarityMap[rarity] || 'Common';
+}
+
+// Glossy card system
+const GLOSSY_CARDS_KEY = 'glossyCards';
+
+function isCardGlossy(cardId) {
+    try {
+        const glossyCards = JSON.parse(localStorage.getItem(GLOSSY_CARDS_KEY) || '{}');
+        return glossyCards[cardId] === true;
+    } catch (e) {
+        return false;
+    }
+}
+
+function setCardGlossy(cardId, isGlossy = true) {
+    try {
+        const glossyCards = JSON.parse(localStorage.getItem(GLOSSY_CARDS_KEY) || '{}');
+        glossyCards[cardId] = isGlossy;
+        localStorage.setItem(GLOSSY_CARDS_KEY, JSON.stringify(glossyCards));
+    } catch (e) {
+        console.error('[GLOSSY] Error saving glossy status:', e);
+    }
+}
+
+// Make glossy functions globally available
+if (typeof window !== 'undefined') {
+    window.isCardGlossy = isCardGlossy;
+    window.setCardGlossy = setCardGlossy;
+    window.getRarityDisplayName = getRarityDisplayName;
+}
+
 function initCardCollection() {
     if (!localStorage.getItem(CARD_COLLECTION_KEY)) {
         let starterDeck = [];
@@ -137,17 +177,37 @@ function useFreePack() {
     return false;
 }
 
-// Admin system - only works if admin key is set
+// Admin system - only works if admin key is set AND secret parameter is present
 const ADMIN_KEY = 'defendTheFortAdmin2024';
 const ADMIN_MODE_KEY = 'isAdminMode';
+// Secret parameter that only you know - change this to your own secret!
+const ADMIN_SECRET_PARAM = 'dtf2024secret'; // Change this to something only you know
+
+// Check if the secret admin parameter is present in URL
+function hasAdminSecret() {
+    if (typeof window === 'undefined' || !window.location) return false;
+    const urlParams = new URLSearchParams(window.location.search);
+    const secret = urlParams.get('admin');
+    return secret === ADMIN_SECRET_PARAM;
+}
 
 function isAdmin() {
-    // Check if admin mode is activated
+    // Only allow admin if BOTH conditions are met:
+    // 1. Secret parameter is in URL
+    // 2. Admin mode is activated in localStorage
+    if (!hasAdminSecret()) {
+        return false;
+    }
     const adminKey = localStorage.getItem(ADMIN_MODE_KEY);
     return adminKey === ADMIN_KEY;
 }
 
 function activateAdminMode(secretKey) {
+    // Check if secret parameter is present first
+    if (!hasAdminSecret()) {
+        console.warn('[ADMIN] Admin secret parameter not found in URL!');
+        return false;
+    }
     if (secretKey === ADMIN_KEY) {
         localStorage.setItem(ADMIN_MODE_KEY, ADMIN_KEY);
         console.log('[ADMIN] Admin mode activated!');
@@ -228,6 +288,8 @@ if (typeof window !== 'undefined') {
     window.giveAdminFreePacks = giveAdminFreePacks;
     window.giveAdminArcana = giveAdminArcana;
     window.isAdmin = isAdmin;
+    window.hasAdminSecret = hasAdminSecret; // Expose secret check function
+    window.getCardRarity = getCardRarity; // Expose for daily login system
     
     // Auto-activate admin mode if key exists (for convenience)
     if (isAdmin()) {
@@ -235,6 +297,9 @@ if (typeof window !== 'undefined') {
         console.log('[ADMIN] Available commands:');
         console.log('[ADMIN]   window.giveAdminFreePacks(5) - Give free packs');
         console.log('[ADMIN]   window.giveAdminArcana(1000) - Give arcana');
+    } else if (!hasAdminSecret()) {
+        // Hide admin UI completely if secret parameter is not present
+        console.log('[ADMIN] Admin secret not found - admin features hidden');
     }
     
     // Quick console commands for admin
@@ -468,6 +533,12 @@ function createRevealedCard(cardData, index) {
     cardDiv.className = 'pack-card-revealed';
     cardDiv.dataset.rarity = cardData.rarity;
     
+    // Check if card is glossy
+    const isGlossy = isCardGlossy(cardData.id);
+    if (isGlossy) {
+        cardDiv.classList.add('glossy-card');
+    }
+    
     if (card) {
         const createCardFn = (typeof createCard !== 'undefined') ? createCard : 
                              (typeof window !== 'undefined' && typeof window.createCard === 'function') ? window.createCard : null;
@@ -490,6 +561,21 @@ function createRevealedCard(cardData, index) {
                 </div>
             `;
         }
+    }
+    
+    // Add rarity badge overlay
+    const rarityBadge = document.createElement('div');
+    rarityBadge.className = 'card-rarity-label';
+    rarityBadge.textContent = getRarityDisplayName(cardData.rarity);
+    rarityBadge.dataset.rarity = cardData.rarity;
+    cardDiv.appendChild(rarityBadge);
+    
+    // Add glossy indicator if card is glossy
+    if (isGlossy) {
+        const glossyBadge = document.createElement('div');
+        glossyBadge.className = 'card-glossy-badge';
+        glossyBadge.textContent = '✨ GLOSSY';
+        cardDiv.appendChild(glossyBadge);
     }
     
     const glowOverlay = document.createElement('div');

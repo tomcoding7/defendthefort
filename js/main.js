@@ -27,6 +27,13 @@ function loadCurrency() {
 function saveCurrency() {
     try {
         localStorage.setItem('playerCurrency', JSON.stringify(playerCurrency));
+        
+        // Auto-save to cloud if signed in
+        if (typeof window !== 'undefined' && typeof window.isSignedIn === 'function' && window.isSignedIn()) {
+            if (typeof window.autoSave === 'function') {
+                window.autoSave();
+            }
+        }
     } catch (error) {
         console.error('[CURRENCY] Error saving currency:', error);
     }
@@ -130,9 +137,22 @@ function awardBattleCurrency(playerWon) {
         playerCurrency.gold += goldEarned;
         
         // Small chance to earn arcana (10% chance, 1-5 arcana)
+        let arcanaEarned = 0;
         if (Math.random() < 0.1) {
-            const arcanaEarned = 1 + Math.floor(Math.random() * 5);
+            arcanaEarned = 1 + Math.floor(Math.random() * 5);
             playerCurrency.arcana += arcanaEarned;
+        }
+        
+        // Award experience for winning
+        if (typeof window !== 'undefined' && typeof window.addExperience === 'function') {
+            const expGained = 50 + Math.floor(Math.random() * 51); // 50-100 XP for winning
+            window.addExperience(expGained);
+        }
+        
+        // Chance to get a card reward after duel (20% chance)
+        let cardReward = null;
+        if (Math.random() < 0.2) {
+            cardReward = awardDuelCardReward();
         }
         
         saveCurrency();
@@ -143,17 +163,105 @@ function awardBattleCurrency(playerWon) {
             incrementAIWins();
         }
         
-        console.log(`[CURRENCY] Awarded ${goldEarned} gold${playerCurrency.arcana > 0 ? ` and ${playerCurrency.arcana} arcana` : ''} for victory`);
+        console.log(`[CURRENCY] Awarded ${goldEarned} gold${arcanaEarned > 0 ? ` and ${arcanaEarned} arcana` : ''} for victory${cardReward ? ` and 1 card` : ''}`);
     } else {
         // Small consolation reward for losing (10-20 gold)
         const consolationGold = 10 + Math.floor(Math.random() * 11);
         playerCurrency.gold += consolationGold;
+        
+        // Small experience for losing (10-20 XP)
+        if (typeof window !== 'undefined' && typeof window.addExperience === 'function') {
+            const expGained = 10 + Math.floor(Math.random() * 11);
+            window.addExperience(expGained);
+        }
         
         saveCurrency();
         updateCurrencyDisplay();
         
         console.log(`[CURRENCY] Awarded ${consolationGold} gold (consolation)`);
     }
+}
+
+// Award a random card after duel
+function awardDuelCardReward() {
+    const cardDB = (typeof CARD_DATABASE !== 'undefined') ? CARD_DATABASE : 
+                   (typeof window !== 'undefined' && window.CARD_DATABASE) ? window.CARD_DATABASE : {};
+    
+    if (!cardDB || Object.keys(cardDB).length === 0) {
+        return null;
+    }
+    
+    // Determine rarity (mostly common/rare, small chance for epic/legendary)
+    let rarity = 'common';
+    const rarityRoll = Math.random();
+    
+    if (rarityRoll < 0.05) {
+        rarity = 'legendary'; // 5% chance
+    } else if (rarityRoll < 0.15) {
+        rarity = 'epic'; // 10% chance
+    } else if (rarityRoll < 0.4) {
+        rarity = 'rare'; // 25% chance
+    }
+    // 60% chance for common
+    
+    // Get rarity function
+    let getRarityFn = null;
+    if (typeof window !== 'undefined' && typeof window.getCardRarity === 'function') {
+        getRarityFn = window.getCardRarity;
+    }
+    
+    let cardId = null;
+    
+    if (getRarityFn) {
+        const allCards = Object.entries(cardDB);
+        const cardsOfRarity = allCards.filter(([id, cardData]) => {
+            return getRarityFn(id) === rarity;
+        });
+        
+        if (cardsOfRarity.length > 0) {
+            const randomCard = cardsOfRarity[Math.floor(Math.random() * cardsOfRarity.length)];
+            cardId = randomCard[0];
+        }
+    }
+    
+    // Fallback: determine by cost
+    if (!cardId) {
+        const allCards = Object.entries(cardDB);
+        const cardsOfRarity = allCards.filter(([id, cardData]) => {
+            if (rarity === 'legendary') return cardData.cost >= 6;
+            if (rarity === 'epic') return cardData.cost >= 4 && cardData.cost < 6;
+            if (rarity === 'rare') return cardData.cost >= 2 && cardData.cost < 4;
+            return cardData.cost < 2;
+        });
+        
+        if (cardsOfRarity.length > 0) {
+            const randomCard = cardsOfRarity[Math.floor(Math.random() * cardsOfRarity.length)];
+            cardId = randomCard[0];
+        } else {
+            // Ultimate fallback: any card
+            const allCardIds = Object.keys(cardDB);
+            cardId = allCardIds[Math.floor(Math.random() * allCardIds.length)];
+        }
+    }
+    
+    // Add card to collection
+    if (cardId) {
+        const addCardsFn = (typeof addCardsToCollection !== 'undefined') ? addCardsToCollection :
+                          (typeof window !== 'undefined' && typeof window.addCardsToCollection) ? window.addCardsToCollection : null;
+        
+        if (addCardsFn) {
+            addCardsFn([cardId]);
+            
+            // Play card reward sound
+            try {
+                const audio = new Audio('assets/soundeffects/rewards/lootreward.wav');
+                audio.volume = 0.6;
+                audio.play().catch(() => {});
+            } catch (e) {}
+        }
+    }
+    
+    return cardId;
 }
 
 function initializeGame(aiEnabled = false) {

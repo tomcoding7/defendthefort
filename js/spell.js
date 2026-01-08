@@ -87,6 +87,11 @@ class Spell {
     }
 
     execute(game, player, target = null) {
+        // Play spell sound effect
+        if (typeof window !== 'undefined' && typeof window.playRandomSpellSound === 'function') {
+            window.playRandomSpellSound(0.6);
+        }
+        
         switch (this.effect) {
             case 'draw_cards':
                 for (let i = 0; i < 2; i++) {

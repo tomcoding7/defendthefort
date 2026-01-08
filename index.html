@@ -10,6 +10,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 </head>
 <body>
     <!-- Animated background particles/smoke -->
@@ -26,6 +30,18 @@
     <div class="main-menu" id="mainMenu">
         <div class="main-menu-content">
             <h1 class="main-menu-title">🛡️ DEFEND THE FORT</h1>
+            <div class="player-level-display" id="playerLevelDisplay" style="display: none;">
+                <div class="level-info">
+                    <span class="level-label">Level</span>
+                    <span class="level-value" id="levelValue">1</span>
+                </div>
+                <div class="exp-bar-container">
+                    <div class="exp-bar" id="expBar">
+                        <div class="exp-fill" id="expFill" style="width: 0%;"></div>
+                    </div>
+                    <div class="exp-text" id="expText">0 / 100 XP</div>
+                </div>
+            </div>
             <div class="main-menu-buttons">
                 <button class="btn btn-primary main-menu-btn" id="deckStudioMenuBtn">
                     <span class="btn-icon">🃏</span>
@@ -43,6 +59,28 @@
                     <span class="btn-icon">⚙️</span>
                     <span class="btn-text">Settings</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Login Reward Modal -->
+    <div class="daily-login-modal" id="dailyLoginModal" style="display: none;">
+        <div class="daily-login-content">
+            <div class="daily-login-header">
+                <h2>🎁 Daily Login Reward!</h2>
+                <button class="daily-login-close" id="dailyLoginClose">&times;</button>
+            </div>
+            <div class="daily-login-body">
+                <div class="daily-login-streak" id="dailyLoginStreak">
+                    <span class="streak-label">Login Streak:</span>
+                    <span class="streak-value" id="streakValue">1</span> days
+                </div>
+                <div class="daily-login-reward" id="dailyLoginReward">
+                    <!-- Reward content will be inserted here -->
+                </div>
+            </div>
+            <div class="daily-login-footer">
+                <button class="btn btn-primary" id="dailyLoginClaim">Claim Reward</button>
             </div>
         </div>
     </div>
@@ -278,11 +316,18 @@
     </div>
 
 
+    <!-- Firebase Configuration and Setup -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/firebase-init.js"></script>
+    <script src="js/firebase-save.js"></script>
+    
     <script src="js/menu.js"></script>
     <script src="js/music.js"></script>
     <script src="js/game.js"></script>
     <script src="js/cards.js"></script>
     <script src="js/deck.js"></script>
+    <script src="js/player-level.js"></script>
+    <script src="js/daily-login.js"></script>
     <script src="js/monster.js"></script>
     <script src="js/player.js"></script>
     <script src="js/spell.js"></script>
@@ -290,6 +335,17 @@
     <script src="js/ai.js"></script>
     <script src="js/main.js"></script>
     <script src="js/deckStudio.js"></script>
+    
+    <!-- Initialize Firebase on page load -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (typeof initializeFirebase === 'function') {
+                    initializeFirebase();
+                }
+            }, 500);
+        });
+    </script>
 </body>
 </html>
 

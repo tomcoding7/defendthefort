@@ -47,6 +47,173 @@
     cursor: pointer;
 }
 
+/* Daily Login Reward Modal */
+.daily-login-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.daily-login-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    position: relative;
+    animation: slideUp 0.4s ease-out;
+}
+
+.daily-login-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.daily-login-header h2 {
+    color: #fff;
+    font-size: 1.8em;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    margin: 0;
+}
+
+.daily-login-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #fff;
+    font-size: 2em;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    line-height: 1;
+}
+
+.daily-login-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.daily-login-body {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.daily-login-streak {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.streak-label {
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+.streak-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.daily-login-reward {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    padding: 30px 20px;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.daily-reward-icon {
+    font-size: 4em;
+    margin-bottom: 15px;
+    animation: bounce 1s ease-in-out infinite;
+}
+
+.daily-reward-text {
+    color: #fff;
+    font-size: 1.3em;
+    font-weight: bold;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.daily-login-footer {
+    text-align: center;
+}
+
+.daily-login-footer .btn {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border: none;
+    color: #fff;
+    padding: 15px 40px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.daily-login-footer .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.daily-login-footer .btn:active {
+    transform: translateY(0);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
 /* Images should not show text cursor */
 img {
     -webkit-user-select: none;
@@ -1640,6 +1807,72 @@ body::after {
     left: 0;
     z-index: 1000;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Player Level Display */
+.player-level-display {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 15px 25px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    min-width: 300px;
+}
+
+.level-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+}
+
+.level-label {
+    font-size: 1.1em;
+    opacity: 0.9;
+}
+
+.level-value {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.exp-bar-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.exp-bar {
+    width: 100%;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.exp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    transition: width 0.5s ease-out;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+.exp-text {
+    color: #fff;
+    font-size: 0.9em;
+    text-align: center;
+    opacity: 0.8;
+}
     background-size: cover;
     background-position: center;
 }
@@ -2015,6 +2248,80 @@ body::after {
 
 .deck-card-item {
     position: relative;
+}
+
+/* Glossy Card Effect for Deck Studio */
+.glossy-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.glossy-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 70%
+    );
+    transform: rotate(45deg);
+    animation: glossyShine 3s ease-in-out infinite;
+    z-index: 5;
+    pointer-events: none;
+}
+
+@keyframes glossyShine {
+    0%, 100% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    50% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+/* Rarity and Glossy Badges for Deck Studio */
+.deck-card-rarity-label {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 15;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.deck-card-glossy-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    z-index: 15;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+    animation: glossyPulse 2s ease-in-out infinite;
+}
+
+@keyframes glossyPulse {
+    0%, 100% {
+        box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(255, 215, 0, 1);
+        transform: scale(1.05);
+    }
 }
 
 .deck-card-count {
@@ -3496,6 +3803,87 @@ body::after {
     .monster-stats {
         font-size: 0.7em;
         margin: 3px 0;
+    }
+}
+
+/* Level Up Notification */
+.level-up-notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    z-index: 20000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.5s ease-out;
+    pointer-events: none;
+}
+
+.level-up-notification.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.level-up-content {
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+    border-radius: 20px;
+    padding: 30px 50px;
+    box-shadow: 0 20px 60px rgba(255, 215, 0, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    animation: levelUpPulse 0.5s ease-out;
+}
+
+.level-up-icon {
+    font-size: 4em;
+    animation: levelUpSpin 1s ease-in-out infinite;
+}
+
+.level-up-text {
+    color: #000;
+    text-align: center;
+}
+
+.level-up-title {
+    font-size: 2em;
+    font-weight: bold;
+    text-shadow: 0 2px 10px rgba(255, 255, 255, 0.5);
+    margin-bottom: 5px;
+}
+
+.level-up-level {
+    font-size: 1.5em;
+    font-weight: bold;
+    opacity: 0.9;
+}
+
+@keyframes levelUpPulse {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes levelUpSpin {
+    0%, 100% {
+        transform: rotate(0deg) scale(1);
+    }
+    25% {
+        transform: rotate(-10deg) scale(1.1);
+    }
+    75% {
+        transform: rotate(10deg) scale(1.1);
     }
 }
 

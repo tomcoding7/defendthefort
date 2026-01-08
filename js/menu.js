@@ -48,6 +48,64 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set initial state: show main menu, hide everything else
     showMainMenu();
     
+    // Update player level display
+    function updatePlayerLevelDisplay() {
+        if (typeof window !== 'undefined' && typeof window.getPlayerLevel === 'function') {
+            const level = window.getPlayerLevel();
+            const exp = window.getPlayerExperience();
+            const expNeeded = window.getExpForLevel(level);
+            const progress = window.getExperienceProgress();
+            
+            const levelValue = document.getElementById('levelValue');
+            const expFill = document.getElementById('expFill');
+            const expText = document.getElementById('expText');
+            const levelDisplay = document.getElementById('playerLevelDisplay');
+            
+            if (levelValue) levelValue.textContent = level;
+            if (expFill) expFill.style.width = (progress * 100) + '%';
+            if (expText) expText.textContent = `${exp} / ${expNeeded} XP`;
+            if (levelDisplay) levelDisplay.style.display = 'flex';
+        }
+    }
+    
+    // Check for daily login reward
+    setTimeout(() => {
+        console.log('[DAILY LOGIN] Checking for daily login reward...');
+        
+        if (typeof window !== 'undefined' && typeof window.checkDailyLogin === 'function') {
+            const loginResult = window.checkDailyLogin();
+            console.log('[DAILY LOGIN] Login result:', loginResult);
+            
+            if (loginResult && loginResult.reward) {
+                console.log('[DAILY LOGIN] Showing reward modal...');
+                // Show daily login modal
+                if (typeof window.showDailyLoginModal === 'function') {
+                    window.showDailyLoginModal(loginResult.reward, loginResult.streak);
+                } else {
+                    console.error('[DAILY LOGIN] showDailyLoginModal function not found!');
+                }
+            } else {
+                console.log('[DAILY LOGIN] No reward to show (already logged in today or no result)');
+            }
+        } else {
+            console.warn('[DAILY LOGIN] checkDailyLogin function not available yet');
+            // Retry after a longer delay
+            setTimeout(() => {
+                if (typeof window !== 'undefined' && typeof window.checkDailyLogin === 'function') {
+                    const loginResult = window.checkDailyLogin();
+                    if (loginResult && loginResult.reward) {
+                        if (typeof window.showDailyLoginModal === 'function') {
+                            window.showDailyLoginModal(loginResult.reward, loginResult.streak);
+                        }
+                    }
+                }
+            }, 1000);
+        }
+        
+        // Update level display
+        updatePlayerLevelDisplay();
+    }, 800); // Increased delay to ensure all scripts are loaded
+    
     // Initialize and start main menu music
     if (typeof switchToMainMenuMusic === 'function') {
         switchToMainMenuMusic();
