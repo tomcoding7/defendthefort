@@ -292,3 +292,30 @@ function switchToBattleMusic() {
     }
 }
 
+function switchToMainMenuMusic() {
+    // Stop battle music if playing
+    if (musicPlayer && musicPlayer.isPlaying) {
+        musicPlayer.pause();
+    }
+    
+    // Initialize or switch to main menu music
+    if (!mainMenuMusicPlayer) {
+        mainMenuMusicPlayer = initializeMusicPlayer('mainmenu');
+    } else {
+        mainMenuMusicPlayer.switchMode('mainmenu');
+    }
+    
+    // Select "Game Starter Music" (first track, index 0)
+    if (mainMenuMusicPlayer) {
+        mainMenuMusicPlayer.selectTrack(0); // Game Starter Music is the first track
+        mainMenuMusicPlayer.play();
+    }
+}
+
+// Make functions globally available
+if (typeof window !== 'undefined') {
+    window.switchToMainMenuMusic = switchToMainMenuMusic;
+    window.switchToBattleMusic = switchToBattleMusic;
+    window.initializeMusicPlayer = initializeMusicPlayer;
+}
+

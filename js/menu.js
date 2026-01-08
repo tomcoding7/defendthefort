@@ -29,6 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (settingsModal) {
             settingsModal.style.display = 'none';
         }
+        
+        // Start main menu music when showing main menu
+        if (typeof switchToMainMenuMusic === 'function') {
+            switchToMainMenuMusic();
+        } else if (typeof window !== 'undefined' && typeof window.switchToMainMenuMusic === 'function') {
+            window.switchToMainMenuMusic();
+        }
     }
     
     // Function to hide main menu
@@ -40,6 +47,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Set initial state: show main menu, hide everything else
     showMainMenu();
+    
+    // Initialize and start main menu music
+    if (typeof switchToMainMenuMusic === 'function') {
+        switchToMainMenuMusic();
+    } else if (typeof window !== 'undefined' && typeof window.switchToMainMenuMusic === 'function') {
+        window.switchToMainMenuMusic();
+    }
     
     // Deck Studio button: navigate to deck studio page
     if (deckStudioMenuBtn) {
